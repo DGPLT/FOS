@@ -34,9 +34,9 @@ The first round has one fire randomly generated on the 3 by 3 square.
 The second round has two, and the third round has three fires randomly generated.</pre>
 
 ### **G. Review Criteria**
-<pre>The best AI system will be determined based on its performance in terms of the least amount of time and cost required to suppress the fires in each round.
+> The best AI system will be determined based on its performance in terms of the least amount of time and cost required to suppress the fires in each round.
 
-<pre>Total Score: (ex) time^2 + log(cost) [less is better]</pre></pre>
+```Total Score: (ex) time^2 + log(cost) [less is better]```
 ___
 
 ## **2. Data Tables**
