@@ -15,7 +15,7 @@
 #### v. (DEPRECATED) Game Logger: Game Tracker/Logger that records the game progress in detail. (Required to discuss the need for real-time data transmission later)
 
 ### **C. Interface**
-- The **Game Screen** has a resolution of 54 by 54. On the upper-left corner is the fire area, where the fire randomly occurs. The starting point is stationary at the lower-right corner of the screen, while a lake is located at the upper-right corner.
+- The **Game Screen** has a resolution of 300 by 300. On the upper-left corner is the fire area, where the fire randomly occurs. The starting point is stationary at the lower-right corner of the screen, while a lake is located at the upper-right corner.
 - The **Controller** is where the operation orders are made. It is internally connected to the Game screen so the result can be visually showed there. 
 
 ### **D. Aircraft**
