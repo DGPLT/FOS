@@ -1,48 +1,42 @@
-import os
-import sys
-import socket
-import arcade
-from threading import Thread
-from multiprocessing import Process
+# -*- coding: utf-8 -*-
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+### Alias : app.py & Last Modded : 2023.05.12. ###
+Coded with Python 3.10 Grammar by MUN, CHAEUN
+Description : 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+from functools import wraps
 
-from src.simulator.display.map import Map1
-from src.config import connection_config as con_config
+from .display.components import GameVisualizer
 
-
-def interrupt(on_key_press, on_key_release):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as simulator:
-        simulator.bind(con_config.ADDR)
-        simulator.listen()
-        print("Connecting to Controller...")
-
-        while True:
-            controller, controller_addr = simulator.accept()
-            msg = controller.recv(con_config.SIZE)
-            print(f"Controller({controller_addr}) Connected:", msg.decode())
-            controller.send("Welcome to the game!".encode())
-            
-            while True:
-                data = controller.recv(con_config.SIZE)
-                if not data: break
-                try:
-                    pressed, key = map(int, data.decode().split("/"))
-                except:
-                    continue
-                if pressed:
-                    on_key_press(key, "")
-                else:
-                    on_key_release(key, "")
+# Initialization
 
 
-def main():
-    screen = Map1()
-    screen.setup()
+def run_simulator(host="", port=0, visualize=True, logging=True, enable_async=False):
+    if not host:
+        host = input("Please specify a host to connect to: ")
+    
+    if not port:
+        port = int(input("Please set a port of the server to connect to: "))
 
-    keyboard_interrupt = Thread(target=interrupt, args=(screen.on_key_press, screen.on_key_release))
-    keyboard_interrupt.start()
+    # Initialize
+    visualizer = GameVisualizer(visualize=visualize, logging=logging)
 
-    arcade.run()
+    def routine():
+        visualizer.clock.tick(60)
 
-
-if __name__ == '__main__':
-    main()
+    def decorator(main):
+        if enable_async:
+            @wraps(main)
+            async def asysc_wrapper(*args, **kwargs):
+                while True:
+                    routine()
+                    await main(visualizer=visualizer, *args, **kwargs)
+            return asysc_wrapper
+        else:
+            @wraps(main)
+            def wrapper(*args, **kwargs):
+                while True:
+                    routine()
+                    main(visualizer=visualizer, *args, **kwargs)
+            return wrapper
+    return decorator
