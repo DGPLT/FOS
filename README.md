@@ -8,7 +8,6 @@
 
 ### **B. Internal Architecture**
 ![Internal Architecture](./etc/internal_architecture.png)
-![Internal Architecture (Github)](/etc/internal_architecture.png)
 #### i. AI/ML Controller: AI sample solution that can solve the game of the simulator.
 #### ii. API Resolver: Layer that abstracts the user-selected API method such as HTTP, TCP Socket and Named Pipe(optional)
 #### iii. Game Simulator: Fire Disaster Simulator which get input from API Resolver, calculate current status, and creates data that can be used to visualize game. For game visualization, the game simulation code should be completely abstracted and operate without problems in both the GUI and CLI environments.
@@ -25,13 +24,17 @@
 - When each round starts, every aircraft gets a random value of water filled. After the aircraft returns from an operation the value is 0, and the value increases as times passes according to a formula. Once an order is made again, the water filling process stops and preparing time will begin.
 
 ### **E. Fire Area**
-<pre>Fires randomly occur on the 3 by 3 square located in the upper-left corner of the Game Screen. Each portion of the square has its own coordinates.</pre>
+<pre>Fires randomly occur on the 3 by 3 square located
+ in the upper-left corner of the Game Screen.
+Each portion of the square has its own coordinates.</pre>
 
 ### **F. Round**
-<pre>The program has three rounds. The first round has one fire randomly generated on the 3 by 3 square. The second round has two, and the third round has three fires randomly generated.</pre>
+<pre>The program has three rounds.
+The first round has one fire randomly generated on the 3 by 3 square.
+The second round has two, and the third round has three fires randomly generated.</pre>
 
 ### **G. Review Criteria**
-<pre> The best AI system will be determined based on its performance in terms of the least amount of time and cost required to suppress the fires in each round.
+<pre>The best AI system will be determined based on its performance in terms of the least amount of time and cost required to suppress the fires in each round.
 
 <pre>Total Score: (ex) time^2 + log(cost) [less is better]</pre></pre>
 ___
@@ -39,37 +42,34 @@ ___
 ## **2. Data Tables**
 ### **A. Aircraft Spec Sheet**
 ![Aircraft Spec Sheet](./etc/spec_sheet.png)
-![Aircraft Spec Sheet (Github)](/etc/spec_sheet.png)
 
 ### **B. Unit Table**
 ![Unit Table](./etc/unit.png)
-![Unit Table (Github)](/etc/unit.png)
 
 ### **C. Target List**
 ![Target List](./etc/target_list.png)
-![Target List (Github)](/etc/target_list.png)
 ![Targets](./etc/targets.png)
-![Targets (Github)](/etc/targets.png)
 - As time goes on, estimated probability of suppression of each target is going to lower.
 - Level of threat will be randomly selected at the beginning of each play and represent possibility of spreading of fire. And ‘Priority’ comes from the level of Threat.
 
 ### **D. Operation Order**
 ![Operation Order](./etc/operation_order.png)
-![Operation Order (Github)](/etc/operation_order.png)
-<pre>Mission Type: [1] Direct to LOCATION, [2] Indirect to LOCATION, [3] Water Fill from Lake and [1], [4] Water Fill from Lake and [2]</pre>
+<pre>Mission Type:
+[1] Direct to LOCATION
+[2] Indirect to LOCATION
+[3] Water Fill from Lake and [1]
+[4] Water Fill from Lake and [2]</pre>
 ***_Drone only can be type 1*
 ___
 
 ## **3.	Flow Chart**
 ![Flow Chart](./etc/flow_chart.png)
-![Flow Chart (Github)](/etc/flow_chart.png)
 ___
 
 ## **4. Order Sequence**
 - i. Each order consists of route, type of aircraft to use based on their properties and whether to fill the aircraft’s water tank from the lake or fly directly to the fire.
 - ii. An order is made every specific(20min) period. Even though the order made on the previous period is on process, a new order will be made.
 ![Order Sequence](./etc/period.png)
-![Order Sequence (Github)](/etc/period.png)
 - iii. Once an order is made, the aircrafts cannot be controlled anymore before the operation ends. (Available after ETR of each aircraft)
 ___
 
