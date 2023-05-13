@@ -77,4 +77,35 @@ ___
 * support No GUI mode
 
 ### **API Preferences**
-<pre>TBD</pre>
+<pre>** Client Side API **
+/start
+/data/aircraft_specsheet
+/data/target_list
+/data/unit_table
+/order/< XML >  => after validating the XML send 200 or 403 or etcs
+/result
+/disconnect
+</pre>
+<pre>** Server Side API **
+/disconnect
+</pre>
+___
+
+## **6. Folder Structure**
+<pre>
+> config : contains the configuration json files
+> etc : contains the files that doesn't related with the codes
+> res : contains image resource files be used at the visualizer
+> src : source directory
+    > controller : controller source dir
+
+    > simulator : simulator source dir
+        > api : api source dir
+        > display : sources for visualization
+        > round : sources that consists the game senarios
+        > unit : data units
+    > test : test source dir (unit tests, etcs)
+build.py : pyinstaller build script
+main.py : pygbag main script for web browsers
+run.py : runnable main script for desktop environment
+</pre>

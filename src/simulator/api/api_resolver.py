@@ -50,7 +50,7 @@ class ApiResolver():
         /data/aircraft_specsheet
         /data/target_list
         /data/unit_table
-        /order/<XML>  => after validating the XML send /order/status/200 or 403
+        /order/<XML>  => after validating the XML send order status like 200 or 403
         /result
         /disconnect
         """
