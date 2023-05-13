@@ -13,7 +13,7 @@ import asyncio
 from src.simulator.app import run_simulator, GameVisualizer
 
 
-@run_simulator(host="", port=0, visualize=True, logging=True, enable_async=True)
+@run_simulator(host="", port=0, visualize=True, logging=True)
 async def main(visualizer: GameVisualizer):
     # Do your rendering here, note that it's NOT an infinite loop,
     # and it is fired only when VSYNC occurs

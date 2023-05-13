@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : Python Runner for Desktop Application
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import sys
+import asyncio
 
 from src.simulator.app import run_simulator, GameVisualizer
 
@@ -38,11 +39,12 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
 
 
 @run_simulator(**get_args())
-def main(visualizer: GameVisualizer):
+async def main(visualizer: GameVisualizer):
+    asyncio.sleep(0)
     if visualizer.is_quit_pressed:
         print("Game Exit pressed...")
         sys.exit(0)
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

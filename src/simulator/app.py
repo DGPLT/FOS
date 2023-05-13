@@ -11,7 +11,7 @@ from .display.components import GameVisualizer
 # Initialization
 
 
-def run_simulator(host="", port=0, visualize=True, logging=True, enable_async=False):
+def run_simulator(host="", port=0, visualize=True, logging=True):
     if not host:
         host = input("Please specify a host to connect to: ")
     
@@ -21,22 +21,12 @@ def run_simulator(host="", port=0, visualize=True, logging=True, enable_async=Fa
     # Initialize
     visualizer = GameVisualizer(visualize=visualize, logging=logging)
 
-    def routine():
-        visualizer.clock.tick(60)
-
     def decorator(main):
-        if enable_async:
-            @wraps(main)
-            async def asysc_wrapper(*args, **kwargs):
-                while True:
-                    routine()
-                    await main(visualizer=visualizer, *args, **kwargs)
-            return asysc_wrapper
-        else:
-            @wraps(main)
-            def wrapper(*args, **kwargs):
-                while True:
-                    routine()
-                    main(visualizer=visualizer, *args, **kwargs)
-            return wrapper
+        @wraps(main)
+        async def wrapper(*args, **kwargs):
+            while True:
+                visualizer.clock.tick(60)
+
+                main(visualizer=visualizer, *args, **kwargs)
+        return wrapper
     return decorator

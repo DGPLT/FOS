@@ -1,54 +1,28 @@
-"""
-Platformer Template
-"""
-import arcade
+import asyncio
 
-# --- Constants
-SCREEN_TITLE = "Controller"
+HOST = "127.0.0.1"
+PORT = 8080
+SIZE = 1024
 
-SCREEN_WIDTH = 200
-SCREEN_HEIGHT = 2000
+async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    data = None
+    while data != "quit":
+        data = (await reader.read(SIZE)).decode('utf8')
+        addr, port = writer.get_extra_info("peername")
 
-import socket
-from src.config import connection_config as con_config
+        message = data + '\n'
+        writer.write(message.encode('utf8'))
 
-controller = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-controller.connect(con_config.ADDR)
-controller.send("Hello World!".encode())
-print("Simulator Connected: " + controller.recv(con_config.SIZE).decode())
+        await writer.drain()
+    writer.close()
+    await writer.wait_closed()
 
+async def run_server():
+    server = await asyncio.start_server(handle_client, HOST, PORT)
+    async with server:
+        await server.serve_forever()
 
-class Controller_Window(arcade.Window):
-    """
-    Main application class.
-    """
+asyncio.run(run_server())
 
-    def __init__(self):
-
-        # Call the parent class and set up the window
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True)
-
-    def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed."""
-
-        if key == arcade.key.UP or key == arcade.key.W \
-        or key == arcade.key.LEFT or key == arcade.key.A \
-        or key == arcade.key.RIGHT or key == arcade.key.D:
-            controller.send(f"1/{key}".encode())
-
-    def on_key_release(self, key, modifiers):
-        """Called when the user releases a key."""
-
-        if key == arcade.key.UP or key == arcade.key.W \
-        or key == arcade.key.LEFT or key == arcade.key.A \
-        or key == arcade.key.RIGHT or key == arcade.key.D:
-            controller.send(f"1/{key}".encode())
-
-
-def main():
-    con = Controller_Window()
-    arcade.run()
-
-
-if __name__ == "__main__":
-    main()
+#loop = asyncio.new_event_loop()
+#loop.run_until_complete(run_server())
