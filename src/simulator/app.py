@@ -6,9 +6,9 @@ Description :
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from functools import wraps
 
-from .display.components import GameVisualizer
-
-# Initialization
+from display.components import GameVisualizer
+from round.scenario import GameScenarios
+from api.api_resolver import ApiResolver
 
 
 def run_simulator(host="", port=0, visualize=True, logging=True):
@@ -20,13 +20,22 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
 
     # Initialize
     visualizer = GameVisualizer(visualize=visualize, logging=logging)
+    scenario = GameScenarios()
+    api = ApiResolver()
+    api.set_host_addr(host, port)
 
     def decorator(main):
         @wraps(main)
         async def wrapper(*args, **kwargs):
+            # Connect to the server
+            await api.connect()
             while True:
+                # Run the game
+                if not await scenario.run_game(api, visualizer):
+                    break
                 visualizer.clock.tick(60)
-
                 main(visualizer=visualizer, *args, **kwargs)
+            # Disconnect from the server
+            await api.disconnect()
         return wrapper
     return decorator

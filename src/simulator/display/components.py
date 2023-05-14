@@ -4,7 +4,7 @@
 Coded with Python 3.10 Grammar by Waters, Nathaniel
 Description : Game CLI Log Console Interface & GUI Visualization
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-import src.simulator.display.map as maps
+import map as maps
 
 
 class GameVisualizer(object):
@@ -53,7 +53,7 @@ class GameVisualizer(object):
         Internally, this function do initialization job for the object coordinates
         """
         if self.logging:
-            print("Round Mode is now updated to " + round)
+            print(f"Round Mode is now updated to {round}")
         
         if self.visualize:
             self._set_round_caption(round)  # update window name
@@ -65,21 +65,23 @@ class GameVisualizer(object):
             #TODO: write code for this
 
             self._display_update()
-    
+
     def show_score_panel(self, round: int, score: int):
         """ Show Score Panel when a round is finished """
         if self.logging:
             print(f"Round {round} finished. Score is {score}.")
 
         if self.visualize:
-            
+            #TODO
 
             self._display_update()
 
-    def update_fire_state(self):
+    async def update_fire_state(self):
+        """ Fire Status Update """
+        #TODO
+        self._display_update()
 
-
-    
-    def move_object_to(self, obj_name, new_location):
-
+    async def move_object_to(self, obj_name, new_latitude, new_longitude):
+        """ Move object to the given coordinates with asynchronized update operation """
+        #TODO
         self._display_update()

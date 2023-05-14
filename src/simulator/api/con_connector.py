@@ -20,11 +20,11 @@ class ConnectionBuilder(object):
             self._server_port: int = 8080
         
         self._reader: asyncio.StreamReader
-        self._writer = asyncio.StreamWriter
+        self._writer: asyncio.StreamWriter
 
     @property
     def server_addr(self):
-        return (self._server_ip, self._server_port)
+        return self._server_ip, self._server_port
 
     def set_server_ip(self, server_ip):
         self._server_ip: str = server_ip
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
         await controller.send("Hello, world!")
         data = await controller.recv()
-        print("Recdived:", data)
+        print("Received:", data)
 
         await controller.send("quit")
 

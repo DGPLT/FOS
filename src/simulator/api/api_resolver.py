@@ -5,8 +5,10 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : AI/ML Controller Connector
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
+import xml.etree.ElementTree as elemTree
 
-from .con_connector import ConnectionBuilder
+from con_connector import ConnectionBuilder
+
 
 class ApiResolver():
     """ Asynchronous API resolver """
@@ -27,9 +29,9 @@ class ApiResolver():
         """ Connect to the server """
         while True:
             try:
-                self._controller.connect()
+                await self._controller.connect()
                 self._connected = True
-                self.send("!CONNECTED!")
+                await self._controller.send("!CONNECTED!")
                 print(f"Server connection has been done successfully.")
                 return True
             except ConnectionRefusedError as e:
@@ -44,7 +46,7 @@ class ApiResolver():
         #TODO
         pass
 
-    async def resolve(self) -> tuple(str, function):
+    async def resolve(self) -> tuple(str, str, function):
         """ API resolve function
         /start
         /data/aircraft_specsheet
@@ -53,8 +55,10 @@ class ApiResolver():
         /order/<XML>  => after validating the XML send order status like 200 or 403
         /result
         /disconnect
+
+        :return: (request, option, function)
         """
-        if not self.is_connected():
+        if not self.is_connected:
             raise Exception("Connection is not yet established.")
         
         request = self._controller.recv()
@@ -63,24 +67,32 @@ class ApiResolver():
             self._controller = ConnectionBuilder()
             self._connected = False
 
-        if request.startwith("/order/"):
-            return "/order", self._recv_operation_order
+        if request.startswith("/order/"):
+            xml = request[len("/order/"):]
+            # validate xml
+            try:
+                elemTree.fromstring(xml)
+            except Exception as e:  # format error
+                await self._controller.send("????")  #TODO: make return string
+            return "/order", request[len("/order/"):], self._recv_operation_order
         
-        match (request):
+        match request:
             case "/start":
-                return request, self._send_game_start_signal
+                return request, "", self._send_game_start_signal
             case "/data/aircraft_specsheet":
-                return request, self._send_aircraft_specsheet
+                return "/data", "aircraft_specsheet", self._send_aircraft_specsheet
             case "/data/target_list":
-                return request, self._send_target_list
+                return "/data", "target_list", self._send_target_list
             case "/data/unit_table":
-                return request, self._send_unit_table
+                return "/data", "unit_table", self._send_unit_table
             case "/result":
                 return request, self._send_operation_result
             case "/disconnect":
-                await self._disconnect()
-                return request, lambda: None
-
+                await self.disconnect()
+                return request, "", lambda x: None
+            case _:
+                await self._controller.send("404")  #TODO: make return string
+                return request, "", lambda x: None
     
     async def _send_game_start_signal(self, data):
         """ Send a game start signal

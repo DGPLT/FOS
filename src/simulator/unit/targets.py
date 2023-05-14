@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : aircraft.py & Last Modded : 2023.05.12. ###
-Coded with Python 3.10 Grammar by ????
-Description : Aircraft Unit Class
+### Alias : targets.py & Last Modded : 2023.05.12. ###
+Coded with Python 3.10 Grammar by ??????
+Description : Targets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
-class Aircraft(dict):
-    """ Aircraft Unit Class """
+class Targets(dict):
+    """ Current Target Information List """
 
     def __init__(self):
         super().__init__()
@@ -18,8 +18,3 @@ class Aircraft(dict):
     def to_json(self):
         #TODO
         pass
-
-
-
-
-    #TODO: Create some caluculation methods for aircrafts

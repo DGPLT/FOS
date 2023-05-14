@@ -102,7 +102,7 @@ ___
     > simulator : simulator source dir
         > api : api source dir
         > display : sources for visualization
-        > round : sources that consists the game senarios
+        > round : sources that consists the game scenarios
         > unit : data units
     > test : test source dir (unit tests, etcs)
 build.py : pyinstaller build script
