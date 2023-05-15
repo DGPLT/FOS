@@ -70,7 +70,7 @@ ___
 - i. Each order consists of route, type of aircraft to use based on their properties and whether to fill the aircraft’s water tank from the lake or fly directly to the fire.
 - ii. An order is made every specific(20min) period. Even though the order made on the previous period is on process, a new order will be made.
 ![Order Sequence](./etc/period.png)
-- iii. Once an order is made, the aircrafts cannot be controlled anymore before the operation ends. (Available after ETR of each aircraft)
+- iii. Once an order is made, the aircraft cannot be controlled anymore before the operation ends. (Available after ETR of each aircraft)
 ___
 
 ## **5. Application Programming Interface between Game Simulator and AI Controller**

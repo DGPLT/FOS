@@ -16,7 +16,7 @@ class OperationOrderList(dict):
             self._order_id = order_id
             self._aircraft_id = aircraft_id
             self._mission_type = mission_type
-            self._target = str
+            self._target = target
             self._done = False
 
         @property
