@@ -59,14 +59,7 @@ class UnitTable(dict):
     # update table when order made
     def update_table(self, data, n):
             
-        if int(self.time[2]) == 4:
-            if int(self.time[1]) == 9:
-                self.time = "1000"
-            else:
-                self.time = "0" + str(int(self.time[1])+1) + "00"
-        else:
-            self.time = str(int(self.time)+20)
-
+        self.time = time_adder(self.time, 20)
 
         operation = filter(is_now(n), data)
 
