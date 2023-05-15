@@ -9,6 +9,7 @@ from ..unit.unit_table import UnitTable
 from ..unit.aircraft import Aircraft
 from ..unit.targets import Targets
 
+
 class GameScenarios:
     """ Game Scenarios class that describes the game rounds """
 

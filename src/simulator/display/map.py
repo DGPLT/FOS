@@ -4,8 +4,6 @@
 Coded with Python 3.10 Grammar by Waters, Nathaniel
 Description : Game MAP Design
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-import json
-
 PIXEL_EXPANSION = 2.3
 MAX_CORDINATION = 300
 SCREEN_WIDTH = MAX_CORDINATION * PIXEL_EXPANSION
@@ -25,7 +23,7 @@ fire = []  # [fire1, fire2, fire3, ...]
 aircraft = {}  # {"D1-A": _, ...}
 
 # Cordinates
-cordinates = json.loads("config/coordinates.json")
+from config.coordinates import coordinates
 
 
 def load_map(pygame):
