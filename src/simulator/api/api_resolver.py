@@ -103,7 +103,7 @@ class ApiResolver():
 
     async def _send_aircraft_specsheet(self, data):
         """ Send the spec sheet of aircrafts
-        data = {} --- aircraft_spec_sheet.json
+        data = {} --- aircraft_spec_sheet.py
         """
         #TODO
         pass
