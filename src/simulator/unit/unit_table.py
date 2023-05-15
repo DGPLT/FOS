@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 ### Alias : unit_table.py & Last Modded : 2023.05.12. ###
-Coded with Python 3.10 Grammar by ????
+Coded with Python 3.10 Grammar by DOO, JINSEO
 Description : Unit Table Management Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import random
-import aircraft_spec_sheet
-import coordinates
+from config.aircraft_spec_sheet import spec_sheet
+from config.coordinates import coordinates
+
 
 class UnitTable(dict):
     """ UnitTable Management Class """
