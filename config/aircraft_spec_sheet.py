@@ -1,4 +1,4 @@
-{
+spec_sheet = {
     "D1": {
         "Aircraft Type": "Drone",
         "Velocity": 80,
