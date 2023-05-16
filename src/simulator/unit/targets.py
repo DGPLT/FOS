@@ -6,7 +6,6 @@ Description : Targets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import json
 
-
 class Targets(dict):
     """ Current Target Information List """
 
