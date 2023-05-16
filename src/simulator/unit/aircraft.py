@@ -4,21 +4,21 @@
 Coded with Python 3.10 Grammar by ????
 Description : Aircraft Unit Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+import json
 
-
-class Aircraft(dict):
-    """ Aircraft Unit Class """
+class Targets(dict):
+    """ Current Target Information List """
 
     def __init__(self):
         super().__init__()
+        file_path_aircraft = '/' """파일 주소 값"""
 
-        # load from json file
-        #TODO
+        with open(file_path_aircraft, 'r') as fp_aircraft:
+            aircraft_target = json.load(fp_aircraft)
 
     def to_json(self):
         #TODO
         pass
-
 
 
 
