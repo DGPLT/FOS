@@ -4,16 +4,18 @@
 Coded with Python 3.10 Grammar by ????
 Description : Unit Table Management Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
+import json
 
 class UnitTable(dict):
     """ UnitTable Management Class """
 
     def __init__(self):
         super().__init__()
+        file_path_UnitTable = '/' """파일 주소 값"""
 
-        # load from json file
-        #TODO
+        with open(file_path_UnitTable, 'r') as fp_UnitTable:
+            data_UnitTable = json.load(fp_UnitTable)
+            print(data_UnitTable)
 
     def to_json(self):
         #TODO
@@ -23,4 +25,3 @@ class UnitTable(dict):
 
 
     #TODO: Create some caluculation methods for unit table
-
