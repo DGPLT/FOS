@@ -6,8 +6,8 @@ Description : Aircraft Unit Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import json
 
-class Targets(dict):
-    """ Current Target Information List """
+class Aircraft(dict):
+    """ Aircraft Information List """
 
     def __init__(self):
         super().__init__()
