@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : operation.py & Last Modded : 2023.05.12. ###
-Coded with Python 3.10 Grammar by ??????
+### Alias : operation.py & Last Modded : 2023.05.16. ###
+Coded with Python 3.10 Grammar by Oh, Myoungjin
 Description : Operation Order Related Classes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+from __future__ import annotations
 import xml.etree.ElementTree as elemTree
 
 
@@ -12,6 +13,7 @@ class OperationOrderList(dict):
 
     class OperationOrder:
         """ Single Operation Order class """
+
         def __init__(self, order_id: int, aircraft_id: str, mission_type: int, target: str):
             self._order_id = order_id
             self._aircraft_id = aircraft_id
@@ -43,17 +45,16 @@ class OperationOrderList(dict):
             """ Finish the order """
             self._done = True
 
-        def validate_orders(self):
+        def validate_orders(self) -> bool:
             """ Validate the order """
-            #TODO
+            # TODO
             pass
 
-        def load_orders(self, order_xml: str) -> (OperationOrder, ...):
+        def load_orders(self, order_xml: str) -> tuple[OperationOrder, ...]:
             """ Load xml orders """
-            #TODO
+            # TODO
             pass
 
     def add_order(self, order_xml: str):
         """ Add an order to the order list """
         self[len(self)+1] = self.OperationOrder.load_orders(order_xml)
-
