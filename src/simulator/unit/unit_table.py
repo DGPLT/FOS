@@ -15,7 +15,6 @@ class UnitTable(dict):
 
         with open(file_path_UnitTable, 'r') as fp_UnitTable:
             data_UnitTable = json.load(fp_UnitTable)
-            print(data_UnitTable)
 
     def to_json(self):
         #TODO
