@@ -14,9 +14,6 @@ class UnitTable(dict):
 
     def __init__(self):
         super().__init__()
-
-        # load from json file
-        #TODO
         
         self.table = table_generator()
         self.time = "0600"
@@ -386,13 +383,3 @@ class UnitTable(dict):
         }
 
         return table
-
-    def to_json(self):
-        #TODO
-        pass
-
-
-
-
-    #TODO: Create some caluculation methods for unit table
-
