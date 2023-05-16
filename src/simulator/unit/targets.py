@@ -15,7 +15,6 @@ class Targets(dict):
 
         with open(file_path_target, 'r') as fp_target:
             data_target = json.load(fp_target)
-            print(data_target)
 
     def to_json(self):
         #TODO
