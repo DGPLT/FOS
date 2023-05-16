@@ -64,8 +64,12 @@ class UnitTable(dict):
 
         return (x, y)
 
-    # update table when order made
-    def update_table(self, data, order_number):
+    def update_table(self):
+        """ Update table for each minute """
+        #TODO
+
+    def apply_order(self, order_list):
+        """ Apply orders to the table """
 
         self.time = self.time_adder(self.time, 20)
 
@@ -102,8 +106,8 @@ class UnitTable(dict):
 
             self.table[order._aircraft_id]['ETR'] = self.time_adder(self.table[order._aircraft_id]['ETA'], time2)
 
-    # Check if a aircraft returned
     def update_state(self, time: int):
+        """ Check aircraft returned """
 
         self.time = self.time_adder(self.time, time)
         for aircraft in self.table:
