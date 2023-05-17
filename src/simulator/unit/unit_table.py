@@ -18,7 +18,7 @@ class UnitTable(dict):
 
     @classmethod
     def get_aircraft_ids(cls):
-        TODO:return (k for k in range  for i in Aircraft.keys())
+        return (k+"-"+i for k, i in map(Aircraft.keys(), ("A", "B"))
 
     @classmethod
     def select_base(cls) -> str:
