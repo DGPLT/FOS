@@ -44,6 +44,7 @@ class UnitTable(dict):
     def __init__(self):
         super().__init__(self._gen_init_table())
         self._current_time: str = "0559"
+        self._order_mutex: bool = False
 
     def is_next_sequence(self) -> bool:
         return #TODO: return true if "0600", "0620", "0640", etcs
@@ -51,6 +52,18 @@ class UnitTable(dict):
     @property
     def current_time(self):
         return self._current_time
+
+    def check_table_mutex(self) -> bool:
+        """ Returns Table Lock Mutex status """
+        return self._order_mutex
+
+    def lock_table(self):
+        """ Lock table until the operation order is conducted """
+        self._order_mutex = True
+
+    def release_table(self):
+        """ Release table when the operation order is conducted """
+        self._order_mutex = False
 
     def __setitem__(self, key, val):
         raise NotImplementedError("This dictionary cannot be updated")

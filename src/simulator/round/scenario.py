@@ -65,15 +65,19 @@ class GameScenarios:
         unit_table = current_round.unit_table
 
         # Update timeline
-        unit_table.update_table()
+        if unit_table.check_table_mutex():
+            unit_table.update_table()
 
         # Check if 20 min lasts
         if unit_table.is_next_sequence():
+            unit_table.lock_table()
             request, option, func = await api.resolve()
 
+            #TODO: Proceed the game with the given request, option, and function
 
+        # Check if time is over 2359 hrs
+        #TODO
 
-        #TODO: Proceed the game with the given request, option, and function
         return True
 
     async def start_new_round(self):
