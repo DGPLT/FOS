@@ -18,7 +18,7 @@ class UnitTable(dict):
 
     @classmethod
     def get_aircraft_ids(cls):
-        return (k+"-"+i for k, i in map(Aircraft.keys(), ("A", "B"))
+        return (k+"-"+i for k, i in map(Aircraft.keys(), ("A", "B")))
 
     @classmethod
     def select_base(cls) -> str:
@@ -42,7 +42,10 @@ class UnitTable(dict):
 
     def __init__(self):
         super().__init__(self._gen_init_table())
-        self._current_time: str = "0600"
+        self._current_time: str = "0559"
+
+    def is_next_sequence(self) -> bool:
+        return #TODO: return true if "0600", "0620", "0640", etcs
 
     @property
     def current_time(self):
@@ -66,12 +69,15 @@ class UnitTable(dict):
 
     def update_table(self):
         """ Update table for each minute """
-        #TODO
+
+        # One minute forward
+        self._current_time = self.time_adder(self._current_time, 1)
+
+        # Apply Update
+        #TODO: apply table update
 
     def apply_order(self, order_list):
         """ Apply orders to the table """
-
-        self.time = self.time_adder(self.time, 20)
 
         operation = filter(self.is_now(order_number), data)
 
