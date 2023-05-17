@@ -71,7 +71,7 @@ class GameScenarios:
         if unit_table.is_next_sequence():
             request, option, func = await api.resolve()
 
-        
+
 
         #TODO: Proceed the game with the given request, option, and function
         return True

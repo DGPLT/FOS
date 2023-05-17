@@ -31,7 +31,7 @@ class UnitTable(dict):
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
-        """ Add t2 (omt) to t1 (str) """
+        """ Add t2 (int) to t1 (str) """
         if int(t1[2:]) + t2 < 60:
             return str(int(t1) + t2)
         else:
@@ -39,6 +39,7 @@ class UnitTable(dict):
                 return "10" + str(int(t1[2:]) + t2 - 60)
             else:
                 return "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60)
+        #TODO: Check if fine with t1=2359 t2=1
 
     def __init__(self):
         super().__init__(self._gen_init_table())
