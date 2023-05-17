@@ -93,6 +93,11 @@ class UnitTable(dict):
         # Apply Update
         #TODO: apply table update
 
+        self.update_state()
+        if int(_current_time[2:]) % 20 == 0:
+            apply_order()
+
+
     def apply_order(self, order_list):
         """ Apply orders to the table """
 
@@ -129,12 +134,11 @@ class UnitTable(dict):
 
             self.table[order._aircraft_id]['ETR'] = self.time_adder(self.table[order._aircraft_id]['ETA'], time2)
 
-    def update_state(self, time: int):
+    def update_state(self):
         """ Check aircraft returned """
 
-        self.time = self.time_adder(self.time, time)
         for aircraft in self.table:
-            if aircraft['Ordered'] and aircraft['ETR'] <= int(self.time):
+            if aircraft['Ordered'] and int(aircraft['ETR']) <= int(self._current_time):
                 aircraft['Ordered'] = False
                 aircraft['Available'] = True
                 aircraft['ETR'] = None
