@@ -10,13 +10,13 @@ import xml.etree.ElementTree as elemTree
 from con_connector import ConnectionBuilder
 
 
-class ApiResolver():
+class ApiResolver:
     """ Asynchronous API resolver """
 
     def __init__(self):
         self._controller = ConnectionBuilder()
         self._connected = False
-    
+
     @property
     def is_connected(self):
         return self._connected
@@ -24,7 +24,7 @@ class ApiResolver():
     def set_host_addr(self, host, port):
         self._controller.set_host_ip(host)
         self._controller.set_host_port(port)
-    
+
     async def connect(self) -> bool:
         """ Connect to the server """
         while True:
@@ -93,7 +93,7 @@ class ApiResolver():
             case _:
                 await self._controller.send("404")  #TODO: make return string
                 return request, "", lambda x: None
-    
+
     async def _send_game_start_signal(self, data):
         """ Send a game start signal
         data = { round: 1 }
