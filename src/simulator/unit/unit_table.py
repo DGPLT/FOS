@@ -27,7 +27,7 @@ class UnitTable(dict):
     @staticmethod
     def get_dist(l1, l2) -> float:
         """ Get Distance between l1 and l2 """
-        return ((l1[0]-l1[1])**2 + (l2[0]-l2[1])**2)**0.5
+        return ((l1[0]-l2[0])**2 + (l1[1]-l2[1])**2)**0.5
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
