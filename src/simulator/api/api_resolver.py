@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : AI/ML Controller Connector
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
+from typing import Callable
 import xml.etree.ElementTree as elemTree
 
 from con_connector import ConnectionBuilder
@@ -46,7 +47,7 @@ class ApiResolver:
         #TODO
         pass
 
-    async def resolve(self) -> tuple(str, str, function):
+    async def resolve(self) -> tuple(str, str, Callable):
         """ API resolve function
         /start
         /data/aircraft_specsheet
@@ -89,26 +90,26 @@ class ApiResolver:
                 return request, self._send_operation_result
             case "/disconnect":
                 await self.disconnect()
-                return request, "", lambda x: None
+                return request, "", lambda *args, **kwargs: None
             case _:
                 await self._controller.send("404")  #TODO: make return string
-                return request, "", lambda x: None
+                return request, "", lambda *args, **kwargs: None
 
-    async def _send_game_start_signal(self, data):
+    async def _send_game_start_signal(self, *args, **kwargs):
         """ Send a game start signal
         data = { round: 1 }
         """
         #TODO
         pass
 
-    async def _send_aircraft_specsheet(self, data):
+    async def _send_aircraft_specsheet(self, *args, **kwargs):
         """ Send the spec sheet of aircrafts
         data = {} --- aircraft_spec_sheet.py
         """
         #TODO
         pass
 
-    async def _send_target_list(self, data):
+    async def _send_target_list(self, *args, **kwargs):
         """ Send the current target status
         data = {
 
@@ -117,7 +118,7 @@ class ApiResolver:
         #TODO
         pass
 
-    async def _send_unit_table(self, data):
+    async def _send_unit_table(self, *args, **kwargs):
         """ Send the current unit table status
         data = {
 

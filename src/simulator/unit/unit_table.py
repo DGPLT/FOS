@@ -31,7 +31,7 @@ class UnitTable(dict):
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
-        """ Add t2 (omt) to t1 (str) """
+        """ Add t2 (int) to t1 (str) """
         if int(t1[2:]) + t2 < 60:
             result = "0" + str(int(t1) + t2) if t1[0]=="0" else str(int(t1) + t2)
         else:
@@ -82,7 +82,7 @@ class UnitTable(dict):
         return order["order_id"] == self.order_num
 
     def get_coordinate(self, typeof_point, point):
-        return targets[typeof_point][point].values
+        return targets[typeof_point][point].values  #TODO: are you sure about the key orders?
 
     def update_table(self):
         """ Update table for each minute """
@@ -114,7 +114,7 @@ class UnitTable(dict):
             if order._mission_type == 1:
                 time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target)) / aircraft[order._aircraft_id[0:2]].velocity
                 time2 = time1
-            
+
             # indirect to target
             elif order._mission_type == 2:
                 time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target[0:2])) / aircraft[order._aircraft_id[0:2]].velocity
@@ -124,13 +124,13 @@ class UnitTable(dict):
             elif order._mission_type == 3:
                 time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / aircraft[order._aircraft_id[0:2]].velocity
                 time2 = self.get_dist(self.get_coordinate("Targets", order._target), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / aircraft[order._aircraft_id[0:2]].velocity
-            
+
             # lake, indirect to target
             elif order._mission_type == 4:
                 time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target[0:2]))) / aircraft[order._aircraft_id[0:2]].velocity
                 time2 = self.get_dist(self.get_coordinate("Targets", order._target[0:2]), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / aircraft[order._aircraft_id[0:2]].velocity
-            
-            
+
+
             # time1 : time to get to target, time2 : time to return from target
             self[order._aircraft_id]['ETD'] = self.time_adder(self.time, aircraft[order._aircraft_id[0:2]].ETRDY)
             self[order._aircraft_id]['ETA'] = self.time_adder(self[order._aircraft_id]['ETD'], time1)
