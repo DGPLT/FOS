@@ -31,15 +31,21 @@ class UnitTable(dict):
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
-        """ Add t2 (int) to t1 (str) """
+        """ Add t2 (omt) to t1 (str) """
         if int(t1[2:]) + t2 < 60:
-            return str(int(t1) + t2)
+            result = "0" + str(int(t1) + t2) if t1[0]=="0" else str(int(t1) + t2)
         else:
             if int(t1[1]) == 9:
-                return "10" + str(int(t1[2:]) + t2 - 60)
+                result = "10" + str(int(t1[2:]) + t2 - 60) if t1[0]=="0" else "20" + str(int(t1[2:]) + t2 - 60)
             else:
-                return "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60)
+                result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
+
+        if t1[:2] == "24":
+            return "0000"
+            
+        return result + "0" if len(result) == 3 else result
         #TODO: Check if fine with t1=2359 t2=1
+
 
     def __init__(self):
         super().__init__(self._gen_init_table())
