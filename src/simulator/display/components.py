@@ -84,4 +84,5 @@ class GameVisualizer(object):
     async def move_object_to(self, obj_name, new_latitude, new_longitude):
         """ Move object to the given coordinates with asynchronized update operation """
         #TODO
+        #drone1.lat = new_latitude, drone1.lon = longitudess
         self._display_update()
