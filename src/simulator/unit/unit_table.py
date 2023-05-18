@@ -90,9 +90,6 @@ class UnitTable(dict):
         # One minute forward
         self._current_time = self.time_adder(self._current_time, 1)
 
-        # Apply Update
-        #TODO: apply table update
-
         # Check if aircraft returned, update water tank
         self.update_state()
 
@@ -168,8 +165,44 @@ class UnitTable(dict):
 
         return (l1[0] + x_velocity * time_past, l1[1] + y_velocity * time_past)
 
+    def get_positions(self, order_list):
+        """" Return the positions of the aircrafts on operation """
 
+        positions = {}
+        
+        for order in order_list:
+            if order._done:
+                continue
 
+            if order._mission_type == 1:
+                l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                l2 = self.get_coordinate("Targets", order._target)
+
+            elif order._mission_type == 2:
+                l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                l2 = self.get_coordinate("Targets", order._target[:2])
+
+            elif order._mission_type == 3:
+                # if current time < departure time + time to get to the lake
+                if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
+                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                    l2 = self.get_coordinate("Lakes", "L1")
+                else:
+                    l1 = self.get_coordinate("Lakes", "L1")
+                    l2 = self.get_coordinate("Targets", order._target)
+
+            else order._mission_type == 4:
+                # if current time < departure time + time to get to the lake
+                if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
+                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                    l2 = self.get_coordinate("Lakes", "L1")
+                else:
+                    l1 = self.get_coordinate("Lakes", "L1")
+                    l2 = self.get_coordinate("Targets", order._target[:2])            
+
+            positions[order._aircraft_id] = calculate_position(l1, l2, self[ETD], Aircraft[order._aircraft_id[:2]].velocity)
+        
+        return positions
 
     def _gen_init_table(self):
         """ Generate Initial Table """
