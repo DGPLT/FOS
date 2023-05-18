@@ -82,7 +82,7 @@ class UnitTable(dict):
         return order["order_id"] == self.order_num
 
     def get_coordinate(self, typeof_point, point):
-        return targets[typeof_point][point].values
+        return coordinates[typeof_point][point].values
 
     def update_table(self):
         """ Update table for each minute """
@@ -112,27 +112,27 @@ class UnitTable(dict):
 
             # direct to target
             if order._mission_type == 1:
-                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target)) / aircraft[order._aircraft_id[0:2]].velocity
+                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target)) / Aircraft[order._aircraft_id[0:2]].velocity
                 time2 = time1
             
             # indirect to target
             elif order._mission_type == 2:
-                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target[0:2])) / aircraft[order._aircraft_id[0:2]].velocity
+                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target[0:2])) / Aircraft[order._aircraft_id[0:2]].velocity
                 time2 = time1
 
             # lake, direct to target 
             elif order._mission_type == 3:
-                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / aircraft[order._aircraft_id[0:2]].velocity
-                time2 = self.get_dist(self.get_coordinate("Targets", order._target), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / aircraft[order._aircraft_id[0:2]].velocity
+                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / Aircraft[order._aircraft_id[0:2]].velocity
+                time2 = self.get_dist(self.get_coordinate("Targets", order._target), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / Aircraft[order._aircraft_id[0:2]].velocity
             
             # lake, indirect to target
             elif order._mission_type == 4:
-                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target[0:2]))) / aircraft[order._aircraft_id[0:2]].velocity
-                time2 = self.get_dist(self.get_coordinate("Targets", order._target[0:2]), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / aircraft[order._aircraft_id[0:2]].velocity
+                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target[0:2]))) / Aircraft[order._aircraft_id[0:2]].velocity
+                time2 = self.get_dist(self.get_coordinate("Targets", order._target[0:2]), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / Aircraft[order._aircraft_id[0:2]].velocity
             
             
             # time1 : time to get to target, time2 : time to return from target
-            self[order._aircraft_id]['ETD'] = self.time_adder(self.time, aircraft[order._aircraft_id[0:2]].ETRDY)
+            self[order._aircraft_id]['ETD'] = self.time_adder(self.time, Aircraft[order._aircraft_id[0:2]].ETRDY)
             self[order._aircraft_id]['ETA'] = self.time_adder(self[order._aircraft_id]['ETD'], time1)
 
             self[order._aircraft_id]['ETR'] = self.time_adder(self[order._aircraft_id]['ETA'], time2)
@@ -141,7 +141,7 @@ class UnitTable(dict):
         """ Check aircraft returned """
 
         for aircraft in self:
-            if aircraft['Ordered'] and int(aircraft['ETR']) <= int(self._current_time):
+            if aircraft['Ordered'] and int(Aircraft['ETR']) <= int(self._current_time):
                 aircraft['Ordered'] = False
                 aircraft['Available'] = True
                 aircraft['ETR'] = None
