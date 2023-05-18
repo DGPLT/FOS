@@ -151,6 +151,26 @@ class UnitTable(dict):
             elif not aircraft['Ordered']
                 aircraft['Current Water'] += get_expected_percentage_of_water_by_min(1)
 
+    def hour_to_min(time: str) -> int:
+        return int(time[:2]) * 60 + int(time[2:])
+
+    def calculate_position(self, l1, l2, start_time, velocity):
+        """" Return aircraft's position caculated """
+
+        h = get_dist(l1, l2)
+        cos = (l2[0] - l1[0]) / h
+        sin = (l2[1] - l1[1]) / h
+
+        x_velocity = cos * velocity
+        y_velocity = sin * velocity 
+        
+        time_past = self.hour_to_min(_current_time) - self.hour_to_min(start_time)
+
+        return (l1[0] + x_velocity * time_past, l1[1] + y_velocity * time_past)
+
+
+
+
     def _gen_init_table(self):
         """ Generate Initial Table """
         ids = iter(self.get_aircraft_ids())
