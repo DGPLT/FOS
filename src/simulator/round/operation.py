@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : operation.py & Last Modded : 2023.05.12. ###
-Coded with Python 3.10 Grammar by ??????
+### Alias : operation.py & Last Modded : 2023.05.16. ###
+Coded with Python 3.10 Grammar by Oh, Myoungjin
 Description : Operation Order Related Classes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+from __future__ import annotations
 import xml.etree.ElementTree as elemTree
+from enum import Enum
+from .scenario import UnitTable, Targets
+
+
+class MissionType(Enum):
+    """ Mission Type Enum """
+    DIRECT = 1
+    INDIRECT = 2
+    FILL_DIRECT = 3
+    FILL_INDIRECT = 4
 
 
 class OperationOrderList(dict):
@@ -12,7 +23,8 @@ class OperationOrderList(dict):
 
     class OperationOrder:
         """ Single Operation Order class """
-        def __init__(self, order_id: int, aircraft_id: str, mission_type: int, target: str):
+
+        def __init__(self, order_id: int, aircraft_id: str, mission_type: MissionType, target: str):
             self._order_id = order_id
             self._aircraft_id = aircraft_id
             self._mission_type = mission_type
@@ -43,17 +55,19 @@ class OperationOrderList(dict):
             """ Finish the order """
             self._done = True
 
-        def validate_orders(self):
+        def validate_orders(self) -> bool:
             """ Validate the order """
-            #TODO
-            pass
+            assert self._aircraft_id in UnitTable.get_aircraft_ids(), 'Aircraft ID is not valid'
+            assert self._mission_type in MissionType, 'Mission Type is not valid'
+            assert self._target in Targets.items(), 'Target is not valid'
 
-        def load_orders(self, order_xml: str) -> (OperationOrder, ...):
+            # TODO
+
+        def load_orders(self, order_xml: str) -> tuple[OperationOrder, ...]:
             """ Load xml orders """
-            #TODO
+            # TODO
             pass
 
     def add_order(self, order_xml: str):
         """ Add an order to the order list """
         self[len(self)+1] = self.OperationOrder.load_orders(order_xml)
-
