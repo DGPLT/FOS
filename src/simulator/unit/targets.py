@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : targets.py & Last Modded : 2023.05.12. ###
-Coded with Python 3.10 Grammar by ??????
-Description : Targets
+### Alias : targets.py & Last Modded : 2023.05.18. ###
+Coded with Python 3.10 Grammar by Kim, KyoungHun
+Description : Target Information Maintainer Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import json
+
 
 class Targets(dict):
     """ Current Target Information List """
@@ -15,6 +16,8 @@ class Targets(dict):
 
         with open(file_path_target, 'r') as fp_target:
             data_target = json.load(fp_target)
+
+    def decrease_success_possiblity(self):
 
     def to_json(self):
         #TODO
