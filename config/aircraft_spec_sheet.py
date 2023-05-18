@@ -128,7 +128,7 @@ spec_sheet = {
     "A5": {
         "Aircraft Type": "Airplane",
         "Velocity": 300,
-        "ETRDY": 15,
+        "ETRDY": 55,
         "Cost": 4500,
         "Cover Area": 2,
         "Water Tank": 3.2,

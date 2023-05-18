@@ -73,6 +73,11 @@ class GameScenarios:
             unit_table.lock_table()
             request, option, func = await api.resolve()
 
+            # If got operation order from controller
+            if request == "/order":
+
+
+
             #TODO: Proceed the game with the given request, option, and function
 
         # Check if time is over 2359 hrs

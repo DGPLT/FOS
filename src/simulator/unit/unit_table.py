@@ -31,7 +31,7 @@ class UnitTable(dict):
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
-        """ Add t2 (omt) to t1 (str) """
+        """ Add t2 (int) to t1 (str) """
         if int(t1[2:]) + t2 < 60:
             result = "0" + str(int(t1) + t2) if t1[0]=="0" else str(int(t1) + t2)
         else:
@@ -111,7 +111,7 @@ class UnitTable(dict):
             if order._mission_type == 1:
                 time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target)) / Aircraft[order._aircraft_id[0:2]].velocity
                 time2 = time1
-            
+
             # indirect to target
             elif order._mission_type == 2:
                 time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target[0:2])) / Aircraft[order._aircraft_id[0:2]].velocity
@@ -126,7 +126,6 @@ class UnitTable(dict):
             elif order._mission_type == 4:
                 time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target[0:2]))) / Aircraft[order._aircraft_id[0:2]].velocity
                 time2 = self.get_dist(self.get_coordinate("Targets", order._target[0:2]), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / Aircraft[order._aircraft_id[0:2]].velocity
-            
             
             # time1 : time to get to target, time2 : time to return from target
             self[order._aircraft_id]['ETD'] = self.time_adder(self.time, Aircraft[order._aircraft_id[0:2]].ETRDY)

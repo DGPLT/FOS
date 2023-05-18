@@ -24,7 +24,7 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
             --logging [0/1] : enable log printing using stdout or not
             """)
             sys.exit(0)
-        
+
         match (arg.startswith("--"), arg):
             case True, "--host":
                 result["host"] = argv[index + 1]

@@ -1,32 +1,44 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : aircraft.py & Last Modded : 2023.05.12. ###
+### Alias : aircraft.py & Last Modded : 2023.05.18. ###
 Coded with Python 3.10 Grammar by Kim, KyoungHun
 Description : Aircraft Unit Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+from enum import Enum
+import json
+
 from config.aircraft_spec_sheet import spec_sheet
+_cached_json = json.dumps(spec_sheet)
 
 
 class Aircraft:
     """ Aircraft Information List """
 
     class BasicAircraft:
-        _cover_area_types = (0, 1, 2)
-        _aircraft_types = {"Drone": "Drone", "Helicopter": "Helicopter", "Airplane": "Airplane"}
+        class CoverArea(Enum):
+            NONE = 0
+            ONE_TILE = 1
+            DIAGONAL = 2
+
+        class Type(Enum):
+            Drone = "Drone"
+            Helicopter = "Helicopter"
+            Airplane = "Airplane"
 
         def __init__(self, dictionary):
-            self._type: str = self._aircraft_types[dictionary["Aircraft Type"]]
+            Type, CoverArea = self.Type, self.CoverArea
+            self._type: Type = Type(dictionary["Aircraft Type"])
             self._velocity: int = int(dictionary["Velocity"])
             self._etrdy: int = int(dictionary["ETRDY"])
             self._cost: int = int(dictionary["Cost"])
-            self._area: int = self._cover_area_types[int(dictionary["Cover Area"])]
+            self._area: CoverArea = CoverArea(int(dictionary["Cover Area"]))
             self._tank: float = float(dictionary["Water Tank"])
             self._poss: int = int(dictionary["Possibility"])
             if not (0 <= self._poss <= 100):
                 raise ValueError("Possibility must be between 0 and 100.")
 
         @property
-        def type(self) -> str:
+        def type(self) -> Type:
             return self._type
 
         @property
@@ -42,7 +54,7 @@ class Aircraft:
             return self._cost
 
         @property
-        def cover_area(self) -> int:
+        def cover_area(self) -> CoverArea:
             return self._area
 
         @property
@@ -71,4 +83,4 @@ class Aircraft:
 
     @staticmethod
     def to_json():
-        return spec_sheet
+        return _cached_json
