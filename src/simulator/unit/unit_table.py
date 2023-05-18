@@ -169,36 +169,52 @@ class UnitTable(dict):
         """" Return the positions of the aircrafts on operation """
 
         positions = {}
-        
+
         for order in order_list:
             if order._done:
                 continue
 
             if order._mission_type == 1:
-                l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                l2 = self.get_coordinate("Targets", order._target)
+                if int(current_time) < int(self[ETA]):
+                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                    l2 = self.get_coordinate("Targets", order._target)
+                else:
+                    l1 = self.get_coordinate("Targets", order._target)   
+                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])           
 
             elif order._mission_type == 2:
-                l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                l2 = self.get_coordinate("Targets", order._target[:2])
+                if int(current_time) < int(self[ETA]):
+                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                    l2 = self.get_coordinate("Targets", order._target[:2])
+                else:
+                    l1 = self.get_coordinate("Targets", order._target[:2])   
+                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])   
 
             elif order._mission_type == 3:
-                # if current time < departure time + time to get to the lake
-                if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
-                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                    l2 = self.get_coordinate("Lakes", "L1")
+                if int(current_time) < int(self[ETA]):
+                    # if current time < departure time + time to get to the lake
+                    if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
+                        l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                        l2 = self.get_coordinate("Lakes", "L1")
+                    else:
+                        l1 = self.get_coordinate("Lakes", "L1")
+                        l2 = self.get_coordinate("Targets", order._target)
                 else:
-                    l1 = self.get_coordinate("Lakes", "L1")
-                    l2 = self.get_coordinate("Targets", order._target)
+                    l1 = self.get_coordinate("Targets", order._target)   
+                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])                         
 
             else order._mission_type == 4:
-                # if current time < departure time + time to get to the lake
-                if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
-                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                    l2 = self.get_coordinate("Lakes", "L1")
+                if int(current_time) < int(self[ETA]):
+                    # if current time < departure time + time to get to the lake
+                    if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
+                        l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                        l2 = self.get_coordinate("Lakes", "L1")
+                    else:
+                        l1 = self.get_coordinate("Lakes", "L1")
+                        l2 = self.get_coordinate("Targets", order._target[:2])            
                 else:
-                    l1 = self.get_coordinate("Lakes", "L1")
-                    l2 = self.get_coordinate("Targets", order._target[:2])            
+                        l1 = self.get_coordinate("Targets", order._target[:2])   
+                        l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])   
 
             positions[order._aircraft_id] = calculate_position(l1, l2, self[ETD], Aircraft[order._aircraft_id[:2]].velocity)
         
