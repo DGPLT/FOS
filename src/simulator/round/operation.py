@@ -5,26 +5,29 @@ Coded with Python 3.10 Grammar by Oh, Myoungjin
 Description : Operation Order Related Classes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from __future__ import annotations
-import xml.etree.ElementTree as elemTree
+
 from enum import Enum
-from .scenario import UnitTable, Targets
+import xmltodict
+import json
 
-
-class MissionType(Enum):
-    """ Mission Type Enum """
-    DIRECT = 1
-    INDIRECT = 2
-    FILL_DIRECT = 3
-    FILL_INDIRECT = 4
+from ..unit.unit_table import UnitTable
+from ..unit.locations import TargetList
 
 
 class OperationOrderList(dict):
     """ Operation OrderList class """
 
+    class MissionType(Enum):
+        """ Mission Type Enum """
+        DIRECT = 1
+        INDIRECT = 2
+        FILL_DIRECT = 3
+        FILL_INDIRECT = 4
+
     class OperationOrder:
         """ Single Operation Order class """
 
-        def __init__(self, order_id: int, aircraft_id: str, mission_type: MissionType, target: str):
+        def __init__(self, order_id: int, aircraft_id: str, mission_type: OperationOrderList.MissionType, target: str):
             self._order_id = order_id
             self._aircraft_id = aircraft_id
             self._mission_type = mission_type
@@ -42,7 +45,7 @@ class OperationOrderList(dict):
             return self._aircraft_id
 
         @property
-        def mission_type(self) -> int:
+        def mission_type(self) -> OperationOrderList.MissionType:
             """ Return mission type """
             return self._mission_type
 
@@ -58,15 +61,17 @@ class OperationOrderList(dict):
         def validate_orders(self) -> bool:
             """ Validate the order """
             assert self._aircraft_id in UnitTable.get_aircraft_ids(), 'Aircraft ID is not valid'
-            assert self._mission_type in MissionType, 'Mission Type is not valid'
-            assert self._target in Targets.items(), 'Target is not valid'
+            assert self._target in TargetList.items(), 'Target is not valid'
 
             # TODO
 
-        def load_orders(self, order_xml: str) -> tuple[OperationOrder, ...]:
+        @staticmethod
+        def load_orders(order_xml: str) -> tuple[OperationOrderList.OperationOrder, ...]:
             """ Load xml orders """
-            # TODO
-            pass
+            xml_parse = xmltodict.parse(order_xml)
+            xml_dict = json.loads(json.dumps(xml_parse))["operations"]
+            if xml_dict["time"] == UnitTable.
+            return ()
 
     def add_order(self, order_xml: str):
         """ Add an order to the order list """
