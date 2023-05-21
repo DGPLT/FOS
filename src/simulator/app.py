@@ -47,6 +47,9 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
                 visualizer.clock.tick(60)  # Set FPS 60
                 main(visualizer=visualizer, *args, **kwargs)
             # Disconnect from the server
-            await api.disconnect()
+            try:
+                await api.disconnect()
+            except Exception:
+                print("Server connection is closed properly.")
         return wrapper
     return decorator
