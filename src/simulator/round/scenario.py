@@ -5,10 +5,13 @@ Coded with Python 3.10 Grammar by ??????
 Description : Game Scenarios (Rounds)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from math import log10
+import asyncio
+import json
 
 from operation import OperationOrderList
 from ..unit.unit_table import UnitTable
 from ..unit.locations import TargetList
+from ..unit.aircraft import Aircraft
 
 
 class GameScenarios:
@@ -38,6 +41,9 @@ class GameScenarios:
         def unit_table(self): return self._unit_table
 
         @property
+        def target_list(self): return self._target_list
+
+        @property
         def score(self):
             #TODO: Adjust this calculation
             return self._time_lapse**2 + log10(self._used_money)
@@ -56,7 +62,7 @@ class GameScenarios:
         self._rounds = {i: self.Round(i) for i in range(1, self._MAX_ROUND+1)}
 
     @property
-    def current_round(self):
+    def current_round(self) -> Round:
         return self._rounds[self._current_round]
 
     async def run_game(self, api, visualizer) -> bool:
@@ -73,24 +79,58 @@ class GameScenarios:
 
         # Check if 20 min lasts
         if unit_table.is_next_sequence():
-            unit_table.lock_table()
+            unit_table.lock_table()  # Table lock
             request, option, func = await api.resolve()
 
             # If got operation order from controller
             if request == "/order":
-
-
-
-            #TODO: Proceed the game with the given request, option, and function
+                try:
+                    current_round.order_list.add_order(option)
+                    # If order successfully added
+                    func(code=200, message="Success")
+                    unit_table.release_table()  # Table release
+                except Exception as e:
+                    func(code=500, message=str(e))
+            elif request == "/data":
+                await func(spec_sheet=Aircraft.to_json(),
+                           target_list=current_round.target_list.to_json(),
+                           unit_table=json.dumps(unit_table))
+            else:
+                await func(code=403)
 
         # Check if time is over 2359 hrs
-        #TODO
+        if unit_table.current_time == "2359":
+            return False  # Game over
 
         return True
 
-    async def start_new_round(self, visualizer):
+    async def start_new_round(self, api, visualizer):
         """ Start a new round """
         self._current_round += 1
         if self._current_round > self._MAX_ROUND:
             raise ValueError("Round Number is out of range.")
         await visualizer.set_round_mode()
+
+        # Wait until game start request is received
+        while True:
+            request, option, func = await api.resolve()
+            if request == "/start":
+                await func(round=self._current_round)
+                break
+            await asyncio.sleep(0)
+
+    async def end_this_round(self, api, visualizer) -> bool:
+        """ End this round
+        :return True: When player is win this round
+        """
+        cur_round = self.current_round
+        # Show Result Panel
+        await visualizer.show_score_panel(cur_round.round_num, cur_round.is_win, cur_round.score)
+        while True:
+            request, option, func = await api.resolve()
+            if request == "/result":
+                await func(round=cur_round.round_num, is_win=cur_round.is_win, score=cur_round.score)
+                break
+            await asyncio.sleep(0)
+
+        return cur_round.is_win and cur_round.round_num < 3

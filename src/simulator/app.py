@@ -31,17 +31,14 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
             # Connect to the server
             await api.connect()
             # Start new round
-            await scenario.start_new_round(visualizer)
+            await scenario.start_new_round(api, visualizer)
             while True:
                 # Run the game
                 if not await scenario.run_game(api, visualizer):
-                    cur_round = scenario.current_round
                     # Show Result Panel
-                    await visualizer.show_score_panel(cur_round.round_num, cur_round.is_win, cur_round.score)
-                    await asyncio.sleep(30)  # wait for 30 sec
-                    if cur_round.is_win and cur_round.round_num < 3:  # Win
+                    if await scenario.end_this_round(api, visualizer):  # Win
                         # Go next round
-                        await scenario.start_new_round(visualizer)
+                        await scenario.start_new_round(api, visualizer)
                     else:  # Lose or Game Finished
                         break
                 visualizer.clock.tick(60)  # Set FPS 60

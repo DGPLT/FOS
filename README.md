@@ -82,13 +82,34 @@ ___
 /data/aircraft_specsheet
 /data/target_list
 /data/unit_table
-/order/< XML >  => after validating the XML send 200 or 403 or etcs
+/order/< XML >  => after validating the XML send 200 or 400, 403, 500 or etcs
 /result
 /disconnect
 </pre>
 <pre>** Server Side API **
 /disconnect
 </pre>
+** Order XML Shape **
+```xml
+<operations>
+    <time>0600</time>
+    <length>2</length>
+    <order>
+        <base>A</base>
+        <aircraft_type>Airplane</aircraft_type>
+        <track_number>Aircraft ID</track_number>
+        <mission_type>2</mission_type>
+        <course>T1, T2</course>
+    </order>
+    <order>
+        <base>B</base>
+        <aircraft_type>Helicopter</aircraft_type>
+        <track_number>Aircraft ID</track_number>
+        <mission_type>3</mission_type>
+        <course>T2</course>
+    </order>
+</operations>
+```
 ___
 
 ## **6. Folder Structure**

@@ -45,7 +45,7 @@ class ApiResolver:
                 return False
 
     async def disconnect(self):
-        await self._controller.send(json.dumps({"code": 200, "message": "Connection closed."}))
+        await self._controller.send("/disconnect")
         raise Exception("Server Connection is lost. Terminating...")
 
     async def resolve(self) -> tuple[str, str, Callable]:
@@ -76,7 +76,7 @@ class ApiResolver:
                 elemTree.fromstring(xml)
             except Exception as e:  # format error
                 await self._controller.send(json.dumps({"code": 400, "message": str(e)}))
-            return "/order", request[len("/order/"):], self._recv_operation_order
+            return "/order", request[len("/order/"):], self._send_operation_result
         
         match request:
             case "/start":
@@ -88,59 +88,58 @@ class ApiResolver:
             case "/data/unit_table":
                 return "/data", "unit_table", self._send_unit_table
             case "/result":
-                return request, self._send_operation_result
+                return request, "", self._send_game_result_by_round
             case "/disconnect":
                 await self.disconnect()
             case _:
                 await self._controller.send(json.dumps({"code": 404, "message": "Not Found"}))
-                return request, "", lambda *args, **kwargs: None
+                return request, "", lambda **kwargs: None
 
-    async def _send_game_start_signal(self, *args, **kwargs):
+    async def _send_game_start_signal(self, **kwargs):
         """ Send a game start signal
-        data = { round: 1 }
+        data = { "round": int }
         """
-        #TODO
-        pass
+        if "code" in kwargs and kwargs["code"] == 403:
+            await self._controller.send(json.dumps({"code": 403, "message": "Forbidden"}))
+        else:
+            await self._controller.send(json.dumps(
+                {"code": 200, "message": f"Round {kwargs['round']} is ready.", "data": kwargs}))
 
-    async def _send_aircraft_specsheet(self, *args, **kwargs):
+    async def _send_aircraft_specsheet(self, **kwargs):
         """ Send the spec sheet of aircraft
         data = {} --- aircraft_spec_sheet.py
         """
-        #TODO
-        pass
+        await self._controller.send(json.dumps(
+            {"code": 200, "message": "Success", "data": kwargs["spec_sheet"]}))
 
-    async def _send_target_list(self, *args, **kwargs):
+    async def _send_target_list(self, **kwargs):
         """ Send the current target status
-        data = {
-
-        }
+        data = {} --- locations.py
         """
-        #TODO
-        pass
+        await self._controller.send(json.dumps(
+            {"code": 200, "message": "Success", "data": kwargs["target_list"]}))
 
-    async def _send_unit_table(self, *args, **kwargs):
+    async def _send_unit_table(self, **kwargs):
         """ Send the current unit table status
+        data = {} --- unit_table.py
+        """
+        await self._controller.send(json.dumps(
+            {"code": 200, "message": "Success", "data": kwargs["unit_table"]}))
+
+    async def _send_operation_result(self, **kwargs):
+        """ Send operation apply trial result of an order
+        data = { "code": 200, "message": "Success" } or { "code": 500, "message": "?????" }
+        """
+        await self._controller.send(json.dumps(kwargs))
+
+    async def _send_game_result_by_round(self, **kwargs):
+        """ Send game result by round
         data = {
-
+            "round": int, "is_win": bool, "score": int
         }
         """
-        #TODO
-        pass
-
-    async def _recv_operation_order(self, result):
-        """ Recv operation tasking order sheet
-        result = {
-
-        }
-        """
-        #TODO
-        pass
-
-    async def _send_operation_result(self, data):
-        """ Send operation result of an order
-        data = {
-
-        }
-        """
-        #TODO
-        pass
+        if "code" in kwargs and kwargs["code"] == 403:
+            await self._controller.send(json.dumps({"code": 403, "message": "Forbidden"}))
+        else:
+            await self._controller.send(json.dumps(
+                {"code": 200, "message": f"Round {kwargs['round']} is finished.", "data": kwargs}))
