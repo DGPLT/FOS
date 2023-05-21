@@ -57,11 +57,14 @@ class BasicAircraft:
 
     def get_expected_percentage_of_water_by_min(self, minutes: int) -> float:
         """ Returns the estimated water percentage by time """
-        return   #TODO: fill this
+        if self._tank >= minutes:
+            return 100
+        else:
+            return minutes / self._tank * 100
 
     def get_water_fill_time_by_current_percentage(self, percentage: float) -> float:
         """ Returns the estimated water filling (100%) time from the current water percentage """
-        return int(self._tank * (1-0.01*percentage) * 10) / 10  #TODO: need to check it this work fine
+        return int(self._tank * (1-0.01*percentage) * 10) / 10  # TODO: need to check it this work fine
 
 
 class Aircrafts:
