@@ -30,8 +30,8 @@ class TargetList:
 
         def __getitem__(self, key):
             data = self._coordinates[self._TYPE][key]
-            if data in self._cached:
-                return self._cached[data]
+            if key in self._cached:
+                return self._cached[key]
             return self._data_holder(data)
 
         def keys(self): return self._coordinates[self._TYPE].keys()
@@ -59,14 +59,14 @@ class TargetList:
                 occured = sample(area, round_num)
                 target_type = {key: 2 if key in occured else 1 if area else 0 for key in keys}
                 target_threats = {key: 100 if key in occured else randrange(1, 100) if area else 0 for key in keys}
-                target_priorities = {data[0]: i for data, i in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
             else:
                 selected = sample(keys, round_num)
                 target_type = {key: 2 if key in selected else 1 for key in keys}
                 target_threats = {key: 100 if key in selected else range(1, 100) for key in keys}
-                target_priorities = {data[0]: i for data, i in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
 
-            [self[key].set_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
+            [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
 
         def mark_targeted(self, target_name):
             """ Mark Targeted to Target """

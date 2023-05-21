@@ -6,7 +6,7 @@ Description : Unit Table Management Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from random import choice, randrange
 
-from aircraft import Aircraft
+from .aircraft import Aircrafts
 from config.coordinates import coordinates
 
 
@@ -16,11 +16,11 @@ class UnitTable(dict):
     _ORDER_SEQUENCE_INTERVAL = 20
 
     # Base Location Selector
-    _base_list = coordinates["Bases"].keys()
+    _base_list = list(coordinates["Bases"].keys())
 
     @classmethod
     def get_aircraft_ids(cls):
-        return (k+"-"+i for k, i in map(Aircraft.keys(), ("A", "B")))
+        return (k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
 
     @classmethod
     def select_base(cls) -> str:
@@ -146,7 +146,7 @@ class UnitTable(dict):
                 aircraft['ETD'] = None
                 aircraft['ETA'] = None
                 aircraft['Current Water'] = 0
-            elif not aircraft['Ordered']
+            elif not aircraft['Ordered']:
                 aircraft['Current Water'] += get_expected_percentage_of_water_by_min(1)
 
     def hour_to_min(time: str) -> int:
@@ -204,7 +204,7 @@ class UnitTable(dict):
                     l1 = self.get_coordinate("Targets", order._target)   
                     l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])                         
 
-            else order._mission_type == 4:
+            elif order._mission_type == 4:
                 if int(current_time) < int(self[ETA]):
                     # if current time < departure time + time to get to the lake
                     if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
@@ -223,9 +223,8 @@ class UnitTable(dict):
 
     def _gen_init_table(self):
         """ Generate Initial Table """
-        ids = iter(self.get_aircraft_ids())
         return {
-            next(ids): {
+            key: {
                 "Ordered": False,
                 "Available": True,
                 "ETR": None,
@@ -233,6 +232,6 @@ class UnitTable(dict):
                 "ETA": None,
                 "Base": self.select_base(),
                 "Current Water": randrange(0, 101)
-            } for i in range(30)
+            } for key in self.get_aircraft_ids()
         }
 

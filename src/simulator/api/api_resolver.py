@@ -9,7 +9,7 @@ import json
 from typing import Callable
 import xml.etree.ElementTree as elemTree
 
-from con_connector import ConnectionBuilder
+from .con_connector import ConnectionBuilder
 
 
 class ApiResolver:

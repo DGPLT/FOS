@@ -8,10 +8,10 @@ from math import log10
 import asyncio
 import json
 
-from operation import OperationOrderList
+from .operation import OperationOrderList
 from ..unit.unit_table import UnitTable
 from ..unit.locations import TargetList
-from ..unit.aircraft import Aircraft
+from ..unit.aircraft import Aircrafts
 
 
 class GameScenarios:
@@ -92,7 +92,7 @@ class GameScenarios:
                 except Exception as e:
                     func(code=500, message=str(e))
             elif request == "/data":
-                await func(spec_sheet=Aircraft.to_json(),
+                await func(spec_sheet=Aircrafts.to_json(),
                            target_list=current_round.target_list.to_json(),
                            unit_table=json.dumps(unit_table))
             else:
