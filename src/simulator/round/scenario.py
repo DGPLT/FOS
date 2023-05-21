@@ -8,8 +8,7 @@ from math import log10
 
 from operation import OperationOrderList
 from ..unit.unit_table import UnitTable
-from ..unit.aircraft import Aircraft
-from ..unit.targets import Targets
+from ..unit.locations import TargetList
 
 
 class GameScenarios:
@@ -24,6 +23,7 @@ class GameScenarios:
             self._round_num = round_num
             self._data = OperationOrderList()
             self._unit_table = UnitTable()
+            self._target_list = TargetList(round_num)
             self._used_money = 0
             self._time_lapse = 0
             self._win = False
