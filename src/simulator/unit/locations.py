@@ -63,7 +63,7 @@ class TargetList:
             else:
                 selected = sample(keys, round_num)
                 target_type = {key: 2 if key in selected else 1 for key in keys}
-                target_threats = {key: 100 if key in selected else range(1, 100) for key in keys}
+                target_threats = {key: 100 if key in selected else randrange(1, 100) for key in keys}
                 target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
 
             [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
