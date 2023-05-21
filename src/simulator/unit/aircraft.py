@@ -38,30 +38,24 @@ class Aircraft:
                 raise ValueError("Possibility must be between 0 and 100.")
 
         @property
-        def type(self) -> Type:
-            return self._type
+        def type(self) -> Type: return self._type
 
         @property
-        def velocity(self) -> int:
-            return self._velocity
+        def velocity(self) -> int: return self._velocity
 
         @property
-        def ETRDY(self) -> int:
-            return self._etrdy
+        def ETRDY(self) -> int: return self._etrdy
 
         @property
-        def cost(self) -> int:
-            return self._cost
+        def cost(self) -> int: return self._cost
 
         @property
-        def cover_area(self) -> CoverArea:
-            return self._area
+        def cover_area(self) -> CoverArea: return self._area
 
         @property
-        def possibility(self) -> int:
-            return self._poss
+        def possibility(self) -> int: return self._poss
 
-        def get_expected_percentage_of_water_by_min(self, percentage: float) -> float:
+        def get_expected_percentage_of_water_by_min(self, minutes: int) -> float:
             """ Returns the estimated water percentage by time """
             return   #TODO: fill this
 
@@ -69,18 +63,13 @@ class Aircraft:
             """ Returns the estimated water filling (100%) time from the current water percentage """
             return int(self._tank * (1-0.01*percentage) * 10) / 10  #TODO: need to check it this work fine
 
-    _aircraft_list = {
-        key: BasicAircraft(val) for key, val in spec_sheet.items()
-    }
+    _aircraft_list = {key: BasicAircraft(val) for key, val in spec_sheet.items()}
 
     @classmethod
-    def __getitem__(cls, key):
-        return cls._aircraft_list[key]
+    def __getitem__(cls, key): return cls._aircraft_list[key]
 
     @classmethod
-    def keys(cls):
-        return cls._aircraft_list.keys()
+    def keys(cls): return cls._aircraft_list.keys()
 
     @staticmethod
-    def to_json():
-        return _cached_json
+    def to_json(): return _cached_json

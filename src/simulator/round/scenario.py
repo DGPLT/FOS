@@ -15,6 +15,8 @@ from ..unit.targets import Targets
 class GameScenarios:
     """ Game Scenarios class that describes the game rounds """
 
+    _MAX_ROUND = 3
+
     class Round:
         """ Game Data Holder class for each round """
 
@@ -24,33 +26,34 @@ class GameScenarios:
             self._unit_table = UnitTable()
             self._used_money = 0
             self._time_lapse = 0
+            self._win = False
 
         @property
-        def round_num(self):
-            return self._round_num
+        def round_num(self): return self._round_num
 
         @property
-        def order_list(self):
-            return self._data
+        def order_list(self): return self._data
 
         @property
-        def unit_table(self):
-            return self._unit_table
+        def unit_table(self): return self._unit_table
 
         @property
         def score(self):
             #TODO: Adjust this calculation
             return self._time_lapse**2 + log10(self._used_money)
 
-        def add_used_money(self, add: int):
-            self._used_money += add
+        @property
+        def is_win(self): return self._win
 
-        def add_lapsed_time(self, add: int):
-            self._time_lapse += add
+        def add_used_money(self, add: int): self._used_money += add
+
+        def add_lapsed_time(self, add: int): self._time_lapse += add
+
+        def set_win(self): self._win = True
 
     def __init__(self):
         self._current_round = 0
-        self._rounds = {1: self.Round(1), 2: self.Round(2), 3: self.Round(3)}
+        self._rounds = {i: self.Round(i) for i in range(1, self._MAX_ROUND+1)}
 
     @property
     def current_round(self):
@@ -85,9 +88,9 @@ class GameScenarios:
 
         return True
 
-    async def start_new_round(self):
+    async def start_new_round(self, visualizer):
         """ Start a new round """
         self._current_round += 1
-
-
-    #TODO: Create some caluculation methods for game scenarios
+        if self._current_round > self._MAX_ROUND:
+            raise ValueError("Round Number is out of range.")
+        await visualizer.set_round_mode()

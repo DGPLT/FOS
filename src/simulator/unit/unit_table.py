@@ -13,6 +13,8 @@ from config.coordinates import coordinates
 class UnitTable(dict):
     """ UnitTable Management Class """
 
+    _ORDER_SEQUENCE_INTERVAL = 20
+
     # Base Location Selector
     _base_list = coordinates["Bases"].keys()
 
@@ -40,12 +42,11 @@ class UnitTable(dict):
             else:
                 result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
 
+        # 2400 to 0000
         if t1[:2] == "24":
             return "0000"
 
         return result + "0" if len(result) == 3 else result
-        #TODO: Check if fine with t1=2359 t2=1
-
 
     def __init__(self):
         super().__init__(self._gen_init_table())
@@ -53,7 +54,8 @@ class UnitTable(dict):
         self._order_mutex: bool = False
 
     def is_next_sequence(self) -> bool:
-        return #TODO: return true if "0600", "0620", "0640", etcs
+        """ Returns true if current time is 0600, 0620, 0640 etc """
+        return int(self._current_time) % self._ORDER_SEQUENCE_INTERVAL == 0
 
     @property
     def current_time(self):
@@ -151,7 +153,7 @@ class UnitTable(dict):
         return int(time[:2]) * 60 + int(time[2:])
 
     def calculate_position(self, l1, l2, start_time, velocity):
-        """" Return aircraft's position caculated """
+        """ Return aircraft's position calculated """
 
         h = get_dist(l1, l2)
         cos = (l2[0] - l1[0]) / h
@@ -162,7 +164,7 @@ class UnitTable(dict):
         
         time_past = self.hour_to_min(_current_time) - self.hour_to_min(start_time)
 
-        return (l1[0] + x_velocity * time_past, l1[1] + y_velocity * time_past)
+        return l1[0] + x_velocity * time_past, l1[1] + y_velocity * time_past
 
     def get_positions(self, order_list):
         """" Return the positions of the aircrafts on operation """
@@ -231,6 +233,6 @@ class UnitTable(dict):
                 "ETA": None,
                 "Base": self.select_base(),
                 "Current Water": randrange(0, 101)
-            } for i in range(0, 31)
+            } for i in range(30)
         }
 
