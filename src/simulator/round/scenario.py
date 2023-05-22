@@ -25,8 +25,8 @@ class GameScenarios:
         def __init__(self, round_num: int):
             self._round_num = round_num
             self._data = OperationOrderList()
-            self._unit_table = UnitTable()
             self._target_list = TargetList(round_num)
+            self._unit_table = UnitTable(self._data, self._target_list)
             self._used_money = 0
             self._time_lapse = 0
             self._win = False
@@ -85,7 +85,7 @@ class GameScenarios:
             # If got operation order from controller
             if request == "/order":
                 try:
-                    current_round.order_list.add_order(option)
+                    unit_table.apply_order(option)
                     # If order successfully added
                     func(code=200, message="Success")
                     unit_table.release_table()  # Table release

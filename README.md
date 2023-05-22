@@ -93,7 +93,6 @@ ___
 ```xml
 <operations>
     <time>0600</time>
-    <length>2</length>
     <order>
         <base>A</base>
         <aircraft_type>Airplane</aircraft_type>

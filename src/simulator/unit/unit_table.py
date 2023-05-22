@@ -6,8 +6,9 @@ Description : Unit Table Management Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from random import choice, randrange
 
+from ..round.operation import OperationOrderList
+from .locations import TargetList
 from .aircraft import Aircrafts
-from config.coordinates import coordinates
 
 
 class UnitTable(dict):
@@ -15,16 +16,12 @@ class UnitTable(dict):
 
     _ORDER_SEQUENCE_INTERVAL = 20
 
-    # Base Location Selector
-    _base_list = list(coordinates["Bases"].keys())
+    # Aircraft ID List
+    _aircraft_ids = (k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
 
     @classmethod
     def get_aircraft_ids(cls):
-        return (k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
-
-    @classmethod
-    def select_base(cls) -> str:
-        return choice(cls._base_list)
+        return cls._aircraft_ids
 
     @staticmethod
     def get_dist(l1, l2) -> float:
@@ -48,9 +45,12 @@ class UnitTable(dict):
 
         return result + "0" if len(result) == 3 else result
 
-    def __init__(self):
+    def __init__(self, order_list: OperationOrderList, target_list: TargetList):
         super().__init__(self._gen_init_table())
         self._current_time: str = "0559"
+        self._order_list: OperationOrderList = order_list
+        self._target_list: TargetList = target_list
+        self._base_list = list(target_list.bases.keys())
         self._order_mutex: bool = False
 
     def is_next_sequence(self) -> bool:
@@ -79,13 +79,6 @@ class UnitTable(dict):
     def __delitem__(self, key):
         raise NotImplementedError("This dictionary does not allow delete")
 
-
-    def is_now(self, order):
-        return order["order_id"] == self.order_num
-
-    def get_coordinate(self, typeof_point, point):
-        return coordinates[typeof_point][point].values
-
     def update_table(self):
         """ Update table for each minute """
 
@@ -99,11 +92,11 @@ class UnitTable(dict):
         if int(_current_time[2:]) % 20 == 0:
             self.apply_order()
 
-
-    def apply_order(self, order_list, order_number):
+    def apply_order(self, order_xml: dict):
         """ Apply orders to the table """
 
-        operation = filter(self.is_now(order_number), order_list)
+        # Check if the order time is correct
+
 
         for order in operation:
             self[order._aircraft_id]['Ordered'] = True
@@ -134,6 +127,9 @@ class UnitTable(dict):
             self[order._aircraft_id]['ETA'] = self.time_adder(self[order._aircraft_id]['ETD'], time1)
 
             self[order._aircraft_id]['ETR'] = self.time_adder(self[order._aircraft_id]['ETA'], time2)
+
+    def get_coordinate(self, typeof_point, point):
+        return coordinates[typeof_point][point].values
 
     def update_state(self):
         """ Check aircraft returned """
@@ -230,8 +226,7 @@ class UnitTable(dict):
                 "ETR": None,
                 "ETD": None,
                 "ETA": None,
-                "Base": self.select_base(),
+                "Base": choice(self._base_list),
                 "Current Water": randrange(0, 101)
             } for key in self.get_aircraft_ids()
         }
-
