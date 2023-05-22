@@ -35,13 +35,13 @@ coordinates = {
     },
     "Bases": {
         "A": {
-            "latitude": 100, "longitude": 85
+            "latitude": 80, "longitude": 65
         },
         "B": {
-            "latitude": 80, "longitude": 190
+            "latitude": 30, "longitude": 190
         },
         "C": {
-            "latitude": 140, "longitude": 230
+            "latitude": 140, "longitude": 270
         }
     }
 }
