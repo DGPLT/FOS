@@ -6,6 +6,7 @@ Description : Operation Order Related Classes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from __future__ import annotations
 
+from typing import Callable
 from enum import Enum
 import xmltodict
 import json
@@ -74,8 +75,8 @@ class OperationOrderList(dict):
             """ Finish the order """
             self._done = True
 
-        def validate_orders(self, ids: tuple[tuple[str, str], ...], targets: tuple[str]
-                            ) -> OperationOrderList.OperationOrder:
+        def validate_order(self, ids: tuple[tuple[str, str], ...], targets: tuple[str],
+                           get_base: Callable[[str], str]) -> OperationOrderList.OperationOrder:
             """ Validate the order """
             # TODO: Validation for Aircraft type
 
@@ -88,13 +89,14 @@ class OperationOrderList(dict):
 
             # TODO: 미션 타입
 
-            # TODO: BASE
+            if self._base != get_base(self._aircraft_id):
+                raise ValueError(f"Cannot find an aircraft [{self._aircraft_id}] located on base [{self._base}]")
 
             # TODO: Validate more
             return self
 
         @staticmethod
-        def load_orders(order_xml: str, oid: int, current_time: str,
+        def load_orders(order_xml: str, oid: int, current_time: str, get_base: Callable[[str], str],
                         aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]
                         ) -> tuple[OperationOrderList.OperationOrder, ...]:
             """ Load xml orders
@@ -117,9 +119,10 @@ class OperationOrderList(dict):
                 raise ValueError("Invalid time line: Does not match to current time.")
 
             return tuple(OperationOrderList.OperationOrder(oid, current_time, **order)
-                         .validate_orders(aircrafts, targets) for order in order_list)
+                         .validate_order(aircrafts, targets, get_base) for order in order_list)
 
-    def add_order(self, order_xml: str, current_time: str,
+    def add_order(self, order_xml: str, current_time: str, get_base: Callable[[str], str],
                   aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
         """ Add an order to the order list """
-        self[len(self)+1] = self.OperationOrder.load_orders(order_xml, len(self)+1, current_time, aircrafts, targets)
+        self[len(self)+1] = self.OperationOrder.load_orders(
+            order_xml, len(self)+1, current_time, get_base, aircrafts, targets)
