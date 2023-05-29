@@ -49,16 +49,16 @@ class TargetList:
                 target_type = {key: 0 for key in keys}
                 target_threats = {key: 0 for key in keys}
                 target_priorities = {key: 0 for key in keys}
-                occured = choice(keys)
-                target_type[occured] = 2
-                target_threats[occured] = 100
-                target_priorities[occured] = 1
+                occurred = choice(keys)
+                target_type[occurred] = 2
+                target_threats[occurred] = 100
+                target_priorities[occurred] = 1
             elif round_num == 2:
                 opt = choice((0, 1, 3, 4))
                 area = [keys[i] for i in (opt, opt+1, opt+3, opt+4)]
-                occured = sample(area, round_num)
-                target_type = {key: 2 if key in occured else 1 if area else 0 for key in keys}
-                target_threats = {key: 100 if key in occured else randrange(1, 100) if area else 0 for key in keys}
+                occurred = sample(area, round_num)
+                target_type = {key: 2 if key in occurred else 1 if area else 0 for key in keys}
+                target_threats = {key: 100 if key in occurred else randrange(1, 100) if area else 0 for key in keys}
                 target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
             else:
                 selected = sample(keys, round_num)
