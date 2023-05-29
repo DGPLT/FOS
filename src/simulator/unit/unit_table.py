@@ -7,6 +7,7 @@ Description : Unit Table Management Class
 from random import choice, randrange
 
 from ..round.operation import OperationOrderList
+MissionType = OperationOrderList.MissionType
 from .locations import TargetList
 from .aircraft import Aircrafts
 
@@ -24,9 +25,13 @@ class UnitTable(dict):
         return cls._aircraft_ids
 
     @staticmethod
-    def get_dist(l1, l2) -> float:
-        """ Get Distance between l1 and l2 """
+    def get_dist(l1: tuple[int, int], l2: tuple[int, int]) -> float:
+        """ Get Distance between l1(x, y) and l2(x, y) """
         return ((l1[0]-l2[0])**2 + (l1[1]-l2[1])**2)**0.5
+
+    @staticmethod
+    def hour_to_min(time: str) -> int:
+        return int(time[:2]) * 60 + int(time[2:])
 
     @staticmethod
     def time_adder(t1: str, t2: int) -> str:
@@ -58,7 +63,7 @@ class UnitTable(dict):
         return int(self._current_time) % self._ORDER_SEQUENCE_INTERVAL == 0
 
     @property
-    def current_time(self):
+    def current_time(self) -> str:
         return self._current_time
 
     def check_table_mutex(self) -> bool:
@@ -88,84 +93,48 @@ class UnitTable(dict):
         # Check if aircraft returned, update water tank
         self.update_state()
 
-        # Apply order every 20 mins
-        if int(_current_time[2:]) % 20 == 0:
-            self.apply_order()
-
-    def apply_order(self, order_xml: dict):
-        """ Apply orders to the table """
-
-        # Check if the order time is correct
+        # 현재 시간이랑 도착시간이랑 비교해서 도착을 했더라 => 불이 꺼졌는지 아닌지 확인 == 일때 확인
+        ## 물탱크 0으로 만들기
+        ## 모든 불 상태 확인
 
 
-        for order in operation:
-            self[order._aircraft_id]['Ordered'] = True
-            self[order._aircraft_id]['Available'] = False
-
-            # direct to target
-            if order._mission_type == 1:
-                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target)) / Aircraft[order._aircraft_id[0:2]].velocity
-                time2 = time1
-
-            # indirect to target
-            elif order._mission_type == 2:
-                time1 = self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Targets", order._target[0:2])) / Aircraft[order._aircraft_id[0:2]].velocity
-                time2 = time1
-
-            # lake, direct to target 
-            elif order._mission_type == 3:
-                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / Aircraft[order._aircraft_id[0:2]].velocity
-                time2 = self.get_dist(self.get_coordinate("Targets", order._target), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / Aircraft[order._aircraft_id[0:2]].velocity
-            
-            # lake, indirect to target
-            elif order._mission_type == 4:
-                time1 = (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target[0:2]))) / Aircraft[order._aircraft_id[0:2]].velocity
-                time2 = self.get_dist(self.get_coordinate("Targets", order._target[0:2]), self.get_coordinate("Bases", self[order._aircraft_id]['Base'])) / Aircraft[order._aircraft_id[0:2]].velocity
-            
-            # time1 : time to get to target, time2 : time to return from target
-            self[order._aircraft_id]['ETD'] = self.time_adder(self.time, Aircraft[order._aircraft_id[0:2]].ETRDY)
-            self[order._aircraft_id]['ETA'] = self.time_adder(self[order._aircraft_id]['ETD'], time1)
-
-            self[order._aircraft_id]['ETR'] = self.time_adder(self[order._aircraft_id]['ETA'], time2)
-
-    def get_coordinate(self, typeof_point, point):
-        return coordinates[typeof_point][point].values
 
     def update_state(self):
         """ Check aircraft returned """
 
-        for aircraft in self:
-            if aircraft['Ordered'] and int(Aircraft['ETR']) <= int(self._current_time):
+        for aid, aircraft in self.items():
+            if aircraft['Ordered'] and int(aircraft['ETR']) <= int(self._current_time):
+                # Reset Aircraft Status
                 aircraft['Ordered'] = False
                 aircraft['Available'] = True
-                aircraft['ETR'] = None
-                aircraft['ETD'] = None
-                aircraft['ETA'] = None
+                aircraft['ETR'] = ""
+                aircraft['ETD'] = ""
+                aircraft['ETA'] = ""
                 aircraft['Current Water'] = 0
-            elif not aircraft['Ordered']:
-                aircraft['Current Water'] += get_expected_percentage_of_water_by_min(1)
 
-    def hour_to_min(time: str) -> int:
-        return int(time[:2]) * 60 + int(time[2:])
+                # TODO: Set Done to Order List
 
-    def calculate_position(self, l1, l2, start_time, velocity):
-        """ Return aircraft's position calculated """
+            elif not aircraft['Ordered'] and aircraft['Current Water'] != 100:
+                aircraft['Current Water'] += Aircrafts[aid[0:2]].get_expected_percentage_of_water_by_min(1)
 
-        h = get_dist(l1, l2)
+    def calculate_position(self, l1, l2, start_time, velocity) -> tuple[int, int]:
+        """ Return aircraft's position(x, y) calculated """
+
+        h = self.get_dist(l1, l2)
         cos = (l2[0] - l1[0]) / h
         sin = (l2[1] - l1[1]) / h
 
         x_velocity = cos * velocity
-        y_velocity = sin * velocity 
+        y_velocity = sin * velocity
         
-        time_past = self.hour_to_min(_current_time) - self.hour_to_min(start_time)
+        time_past = self.hour_to_min(self._current_time) - self.hour_to_min(start_time)
 
-        return l1[0] + x_velocity * time_past, l1[1] + y_velocity * time_past
+        return round(l1[0] + x_velocity * time_past), round(l1[1] + y_velocity * time_past)
 
-    def get_positions(self, order_list):
+    def get_current_positions(self) -> dict[str, tuple[int, int]]:
         """" Return the positions of the aircrafts on operation """
 
-        positions = {}
+        positions: dict[str, tuple[int, int]] = {}
 
         for order in order_list:
             if order._done:
@@ -173,8 +142,8 @@ class UnitTable(dict):
 
             if order._mission_type == 1:
                 if int(current_time) < int(self[ETA]):
-                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                    l2 = self.get_coordinate("Targets", order._target)
+                    loc_from = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                    loc_to = self.get_coordinate("Targets", order._target)
                 else:
                     l1 = self.get_coordinate("Targets", order._target)   
                     l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])           
@@ -208,14 +177,41 @@ class UnitTable(dict):
                         l2 = self.get_coordinate("Lakes", "L1")
                     else:
                         l1 = self.get_coordinate("Lakes", "L1")
-                        l2 = self.get_coordinate("Targets", order._target[:2])            
+                        l2 = self.get_coordinate("Targets", order._target[:2])
                 else:
-                        l1 = self.get_coordinate("Targets", order._target[:2])   
-                        l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])   
+                    l1 = self.get_coordinate("Targets", order._target[:2])
+                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
 
             positions[order._aircraft_id] = calculate_position(l1, l2, self[ETD], Aircraft[order._aircraft_id[:2]].velocity)
-        
+
         return positions
+
+    def apply_order(self, order_xml: str):
+        """ Apply orders to the table """
+
+        # Let OperationOrderList Add New Orders
+        ## Check if the order time is correct
+        self._order_list.add_order(order_xml, self._current_time, , )
+
+        # Apply Details of new order to the table
+        for order in self._order_list[-1]:
+            this = self[order.aircraft_id]
+            this['Ordered'] = True
+            this['Available'] = False
+
+            estimated_time_to_back = self.get_dist(self._target_list.bases[this['Base']]., self._target_list.targets[order.target[0]]) / Aircrafts[order.aircraft_id[0:2]].velocity
+            if order.mission_type in (MissionType.FILL_DIRECT, MissionType.FILL_INDIRECT):  # lake, direct/indirect to target
+                estimated_time_to_go = (self.get_dist(self.get_coordinate("Bases", this['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / Aircraft[order._aircraft_id[0:2]].velocity
+            else:  # no lake
+                estimated_time_to_go = estimated_time_to_back
+
+            # time1 : time to get to target, time2 : time to return from target
+            self[order.aircraft_id]['ETD'] = self.time_adder(self._current_time, Aircrafts[order.aircraft_id[0:2]].ETRDY)
+            self[order.aircraft_id]['ETA'] = self.time_adder(self[order.aircraft_id]['ETD'], time1)
+
+            self[order.aircraft_id]['ETR'] = self.time_adder(self[order.aircraft_id]['ETA'], time2)
+
+            # TODO: Update Target Status
 
     def _gen_init_table(self):
         """ Generate Initial Table """
@@ -223,9 +219,9 @@ class UnitTable(dict):
             key: {
                 "Ordered": False,
                 "Available": True,
-                "ETR": None,
-                "ETD": None,
-                "ETA": None,
+                "ETR": "",
+                "ETD": "",
+                "ETA": "",
                 "Base": choice(self._base_list),
                 "Current Water": randrange(0, 101)
             } for key in self.get_aircraft_ids()
