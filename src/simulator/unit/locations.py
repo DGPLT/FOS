@@ -121,6 +121,9 @@ class TargetList:
         @property
         def long(self): return self._loc_dict["longitude"]
 
+        @property
+        def coords(self) -> tuple[int, int]: return self._loc_dict["longitude"], self._loc_dict["latitude"]
+
     class Target(Location):
         """ Target Coordination Holder Class """
 
