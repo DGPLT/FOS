@@ -83,9 +83,9 @@ class OperationOrderList(dict):
             if self._aircraft_id not in ids:
                 raise ValueError("Aircraft ID is not valid")
 
-            if self._target not in targets:
-                # TODO: 타겟 자료형 좀
-                raise ValueError("Target Name is not valid")
+            #if self._target not in targets:
+            #    # TODO: 타겟 자료형 좀
+            #    raise ValueError("Target Name is not valid")
 
             # TODO: 미션 타입
 
@@ -93,6 +93,8 @@ class OperationOrderList(dict):
                 raise ValueError(f"Cannot find an aircraft [{self._aircraft_id}] located on base [{self._base}]")
 
             # TODO: Validate more
+
+            # TODO: 이미 명령을 받은 경우
             return self
 
         @staticmethod
