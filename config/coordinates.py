@@ -35,7 +35,7 @@ coordinates = {
     },
     "Bases": {
         "A": {
-            "latitude": 80, "longitude": 65
+            "latitude": 60, "longitude": 65
         },
         "B": {
             "latitude": 30, "longitude": 190
