@@ -74,8 +74,10 @@ class GameScenarios:
         unit_table = current_round.unit_table
 
         # Update timeline
-        if unit_table.check_table_mutex():
+        if not unit_table.check_table_mutex():
             unit_table.update_table()
+            data = get_current_positions()
+            visualizer.
 
         # Check if 20 min lasts
         if unit_table.is_next_sequence():
@@ -101,6 +103,10 @@ class GameScenarios:
         # Check if time is over 2359 hrs
         if unit_table.current_time == "2359":
             return False  # Game over
+
+        # Check target safety
+        if selfskefjl:
+            return False  # Win!
 
         return True
 
