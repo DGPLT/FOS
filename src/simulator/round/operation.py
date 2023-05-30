@@ -126,5 +126,5 @@ class OperationOrderList(dict):
     def add_order(self, order_xml: str, current_time: str, get_base: Callable[[str], str],
                   aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
         """ Add an order to the order list """
-        self[len(self)+1] = self.OperationOrder.load_orders(
-            order_xml, len(self)+1, current_time, get_base, aircrafts, targets)
+        self[len(self)] = self.OperationOrder.load_orders(
+            order_xml, len(self), current_time, get_base, aircrafts, targets)
