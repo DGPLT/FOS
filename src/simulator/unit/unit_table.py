@@ -95,6 +95,7 @@ class UnitTable(dict):
 
         # 현재 시간이랑 도착시간이랑 비교해서 도착을 했더라 => 불이 꺼졌는지 아닌지 확인 == 일때 확인
         ## 물탱크 0으로 만들기
+
         ## 모든 불 상태 확인
 
 
@@ -132,57 +133,39 @@ class UnitTable(dict):
         return round(l1[0] + x_velocity * time_past), round(l1[1] + y_velocity * time_past)
 
     def get_current_positions(self) -> dict[str, tuple[int, int]]:
-        """" Return the positions of the aircrafts on operation """
+        """" Return the positions of the aircraft on operation """
 
         positions: dict[str, tuple[int, int]] = {}
+        targets = self._target_list.targets
+        lakes = self._target_list.lakes
+        bases = self._target_list.bases
 
-        for order in order_list:
-            if order._done:
-                continue
-
-            if order._mission_type == 1:
-                if int(current_time) < int(self[ETA]):
-                    loc_from = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                    loc_to = self.get_coordinate("Targets", order._target)
-                else:
-                    l1 = self.get_coordinate("Targets", order._target)   
-                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])           
-
-            elif order._mission_type == 2:
-                if int(current_time) < int(self[ETA]):
-                    l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                    l2 = self.get_coordinate("Targets", order._target[:2])
-                else:
-                    l1 = self.get_coordinate("Targets", order._target[:2])   
-                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])   
-
-            elif order._mission_type == 3:
-                if int(current_time) < int(self[ETA]):
-                    # if current time < departure time + time to get to the lake
-                    if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
-                        l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                        l2 = self.get_coordinate("Lakes", "L1")
+        for orders in self._order_list:
+            for order in filter(lambda x: not x.done, orders):
+                this = self[order.aircraft_id]
+                if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
+                    if int(self._current_time) < int(self['ETA']):
+                        loc_from = bases[this['Base']]
+                        loc_to = targets[order.target[0]]
                     else:
-                        l1 = self.get_coordinate("Lakes", "L1")
-                        l2 = self.get_coordinate("Targets", order._target)
+                        loc_from = targets[order.target[0]]
+                        loc_to = bases[this['Base']]
                 else:
-                    l1 = self.get_coordinate("Targets", order._target)   
-                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])                         
-
-            elif order._mission_type == 4:
-                if int(current_time) < int(self[ETA]):
-                    # if current time < departure time + time to get to the lake
-                    if int(current_time) < int(time_adder(self[ETD], (self.get_dist(self.get_coordinate("Bases", self[order._aircraft_id]['Base']), self.get_coordinate("Lakes", "L1")) / Aircraft[order._aircraft_id[:2]].velocity))):
-                        l1 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
-                        l2 = self.get_coordinate("Lakes", "L1")
+                    if int(self._current_time) < int(self['ETA']):
+                        # if current time < departure time + time to get to the lake
+                        if int(self._current_time) < int(self.time_adder(self['ETD'], self.get_dist(
+                                bases[this['Base']], lakes['L1']) / Aircrafts[order.aircraft_id[:2]].velocity)):
+                            loc_from = bases[this['Base']]
+                            loc_to = lakes['L1']
+                        else:
+                            loc_from = lakes['L1']
+                            loc_to = targets[order.target[0]]
                     else:
-                        l1 = self.get_coordinate("Lakes", "L1")
-                        l2 = self.get_coordinate("Targets", order._target[:2])
-                else:
-                    l1 = self.get_coordinate("Targets", order._target[:2])
-                    l2 = self.get_coordinate("Bases", self[order._aircraft_id]['Base'])
+                        loc_from = targets[order.target[0]]
+                        loc_to = bases[this['Base']]
 
-            positions[order._aircraft_id] = calculate_position(l1, l2, self[ETD], Aircraft[order._aircraft_id[:2]].velocity)
+                positions[order.aircraft_id] = self.calculate_position(
+                    loc_from, loc_to, self['ETD'], Aircrafts[order.aircraft_id[:2]].velocity)
 
         return positions
 
@@ -199,17 +182,17 @@ class UnitTable(dict):
             this['Ordered'] = True
             this['Available'] = False
 
-            estimated_time_to_back = self.get_dist(self._target_list.bases[this['Base']]., self._target_list.targets[order.target[0]]) / Aircrafts[order.aircraft_id[0:2]].velocity
+            estimated_time_to_back = self.get_dist(self._target_list.bases[this['Base']], self._target_list.targets[order.target[0]]) / Aircrafts[order.aircraft_id[0:2]].velocity
             if order.mission_type in (MissionType.FILL_DIRECT, MissionType.FILL_INDIRECT):  # lake, direct/indirect to target
-                estimated_time_to_go = (self.get_dist(self.get_coordinate("Bases", this['Base']), self.get_coordinate("Lakes", "L1")) + self.get_dist(self.get_coordinate("Lakes", "L1"), self.get_coordinate("Targets", order._target))) / Aircraft[order._aircraft_id[0:2]].velocity
+                estimated_time_to_go = (self.get_dist(self._target_list.bases[this['Base']], self._target_list.lakes[this['L1']]) + self.get_dist(self._target_list.lakes[this['L1']], self._target_list.targets[order.target[0]])) / Aircrafts[order.aircraft_id[0:2]].velocity
             else:  # no lake
                 estimated_time_to_go = estimated_time_to_back
 
             # time1 : time to get to target, time2 : time to return from target
             self[order.aircraft_id]['ETD'] = self.time_adder(self._current_time, Aircrafts[order.aircraft_id[0:2]].ETRDY)
-            self[order.aircraft_id]['ETA'] = self.time_adder(self[order.aircraft_id]['ETD'], time1)
+            self[order.aircraft_id]['ETA'] = self.time_adder(self[order.aircraft_id]['ETD'], estimated_time_to_go)
 
-            self[order.aircraft_id]['ETR'] = self.time_adder(self[order.aircraft_id]['ETA'], time2)
+            self[order.aircraft_id]['ETR'] = self.time_adder(self[order.aircraft_id]['ETA'], estimated_time_to_back)
 
             # TODO: Update Target Status
 
