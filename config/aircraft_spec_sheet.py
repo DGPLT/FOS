@@ -6,7 +6,7 @@ spec_sheet = {
         "Cost": 500,
         "Cover Area": 0,
         "Water Tank": 7.2,
-        "Possibility": 60
+        "Possibility": 56
     },
     "D2": {
         "Aircraft Type": "Drone",
@@ -15,7 +15,7 @@ spec_sheet = {
         "Cost": 600,
         "Cover Area": 0,
         "Water Tank": 6.8,
-        "Possibility": 70
+        "Possibility": 57
     },
     "D3": {
         "Aircraft Type": "Drone",
@@ -24,7 +24,7 @@ spec_sheet = {
         "Cost": 400,
         "Cover Area": 0,
         "Water Tank": 7.5,
-        "Possibility": 50
+        "Possibility": 55
     },
     "D4": {
         "Aircraft Type": "Drone",
@@ -33,7 +33,7 @@ spec_sheet = {
         "Cost": 550,
         "Cover Area": 0,
         "Water Tank": 6.7,
-        "Possibility": 65
+        "Possibility": 57
     },
     "D5": {
         "Aircraft Type": "Drone",
@@ -42,7 +42,7 @@ spec_sheet = {
         "Cost": 450,
         "Cover Area": 0,
         "Water Tank": 7.4,
-        "Possibility": 55
+        "Possibility": 56
     },
     "H1": {
         "Aircraft Type": "Helicopter",
@@ -51,7 +51,7 @@ spec_sheet = {
         "Cost": 1000,
         "Cover Area": 1,
         "Water Tank": 6.5,
-        "Possibility": 75
+        "Possibility": 61
     },
     "H2": {
         "Aircraft Type": "Helicopter",
@@ -60,7 +60,7 @@ spec_sheet = {
         "Cost": 950,
         "Cover Area": 1,
         "Water Tank": 6.8,
-        "Possibility": 70
+        "Possibility": 62
     },
     "H3": {
         "Aircraft Type": "Helicopter",
@@ -69,7 +69,7 @@ spec_sheet = {
         "Cost": 1100,
         "Cover Area": 1,
         "Water Tank": 6.1,
-        "Possibility": 80
+        "Possibility": 63
     },
     "H4": {
         "Aircraft Type": "Helicopter",
@@ -78,7 +78,7 @@ spec_sheet = {
         "Cost": 900,
         "Cover Area": 1,
         "Water Tank": 6.7,
-        "Possibility": 70
+        "Possibility": 60
     },
     "H5": {
         "Aircraft Type": "Helicopter",
@@ -87,43 +87,43 @@ spec_sheet = {
         "Cost": 1050,
         "Cover Area": 1,
         "Water Tank": 6.3,
-        "Possibility": 80
+        "Possibility": 62
     },
     "A1": {
         "Aircraft Type": "Airplane",
         "Velocity": 350,
-        "ETRDY": 45,
+        "ETRDY": 40,
         "Cost": 4000,
         "Cover Area": 2,
         "Water Tank": 4.0,
-        "Possibility": 88
+        "Possibility": 90
     },
     "A2": {
         "Aircraft Type": "Airplane",
         "Velocity": 280,
-        "ETRDY": 50,
+        "ETRDY": 37,
         "Cost": 3500,
         "Cover Area": 2,
         "Water Tank": 3.6,
-        "Possibility": 90
+        "Possibility": 85
     },
     "A3": {
         "Aircraft Type": "Airplane",
         "Velocity": 390,
-        "ETRDY": 45,
+        "ETRDY": 41,
         "Cost": 5200,
         "Cover Area": 2,
         "Water Tank": 3.4,
-        "Possibility": 97
+        "Possibility": 99
     },
     "A4": {
         "Aircraft Type": "Airplane",
         "Velocity": 270,
-        "ETRDY": 60,
+        "ETRDY": 55,
         "Cost": 3200,
         "Cover Area": 2,
         "Water Tank": 3.6,
-        "Possibility": 85
+        "Possibility": 83
     },
     "A5": {
         "Aircraft Type": "Airplane",
