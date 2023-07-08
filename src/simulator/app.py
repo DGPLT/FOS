@@ -41,7 +41,6 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
                         await scenario.start_new_round(api, visualizer)
                     else:  # Lose or Game Finished
                         break
-                visualizer.clock.tick(60)  # Set FPS 60
                 main(visualizer=visualizer, *args, **kwargs)
             # Disconnect from the server
             try:
