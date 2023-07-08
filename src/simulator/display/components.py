@@ -4,15 +4,27 @@
 Coded with Python 3.10 Grammar by Waters, Nathaniel
 Description : Game CLI Log Console Interface & GUI Visualization
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+import sys
+
 _PIXEL_EXPANSION = 2.3
 _MAX_CORDINATION = 300
 _SCREEN_WIDTH = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
 _SCREEN_HEIGHT = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
 _SCREEN_SIZE = (_SCREEN_WIDTH, _SCREEN_HEIGHT)
 
+js = None
+
 pygame = None
 load_image = None
 entities = None
+
+
+def load_js():
+    """ JS Object Loader """
+    global js
+    if js is None:
+        import js as js_module
+        js = js_module
 
 
 def load_pygame():
@@ -28,32 +40,6 @@ def load_pygame():
 
 class GameVisualizer(object):
     """ Game Visualizer Interface with PyGame Library """
-    fire = [False, False, False, False, False, False, False, False, False] # fire is loaded based on bool position
-    Targets = [
-            [280, 20],
-            [280, 60],
-            [280, 100],
-            [240, 20],
-            [240, 60],
-            [240, 100],
-            [200, 20],
-            [200, 60],
-            [200, 100]
-        ] # position index for fire
-    T1, T2, T3, T4, T5, T6, T7, T8, T9 = 0, 0, 0, 0, 0, 0, 0, 0, 0
-    fire_sheet = [T1, T2, T3, T4, T5, T6, T7, T8, T9] # pre pygame bucket for fire sprites
-
-    air_sheet = []
-    count = 0
-    for i in range(3):
-        count += 1
-        for i in range(10):
-            if count == 1:
-                air_sheet.append("D" + str(i + 1))
-            elif count == 2:
-                air_sheet.append("H" + str(i + 1))
-            else:
-                air_sheet.append("A" + str(i + 1))
 
     def __init__(self, logging: bool = True, visualize: bool = True):
         """
@@ -61,65 +47,52 @@ class GameVisualizer(object):
         """
         self.logging: bool = logging
         self.visualize: bool = visualize
+        self.is_pyodide: bool = sys.platform == "emscripten" or "pyodide" in sys.modules
         self._display_update = lambda: None
 
-        if visualize:
+        if self.is_pyodide:
+            load_js()
+
+        if visualize and not self.is_pyodide:
             # import pygame library only when visualizer is enabled
             load_pygame()
 
-            self.fire_group = pygame.sprite.Group()
-
-
-
-
-            temp = []
-            for i in self.fire_sheet:
-                i = entities.Fire(self.Targets[self.fire_sheet.index(i)][0], self.Targets[self.fire_sheet.index(i)][1])
-                temp.append(i)
-            self.fire_sheet = temp
-
-            self._pygame = pygame
-            self._get_event = pygame.event.get
             self._display_update = pygame.display.update
-            self._pygame_QUIT = pygame.QUIT
             self.clock = pygame.time.Clock()
 
             pygame.init()
             self._set_round_caption(0)
             self._screen = pygame.display.set_mode(_SCREEN_SIZE)
-            
-            # load map and other images
-            self.background_i = pygame.image.load("res/FOS_BACKGROUND.png")
-            self.background_i = pygame.transform.scale(self.background_i, _SCREEN_SIZE)
-            self.drone_i = pygame.image.load("res/drone1.png")
-            self.heli_i = pygame.image.load("res/heli1.png")
-            self.plane_i = pygame.image.load("res/plane1.png")
-            self.fire_i = pygame.image.load("res/Fire1.png")
-
-            self.assign_aircraft(self.air_sheet) # assign class to each aircraft
 
     def is_quit_pressed(self) -> bool:
-        """ Check if game quit operation is ordered. """
-        while self.visualize:
-            self._screen.blit(self.background_i, (0, 0))
-            for event in self._get_event():
-                if event.type == self._pygame_QUIT:
-                    self.visualize = False
-                    return True
-            self._display_update()
-        self._pygame.quit()
+        """ Check if game quit operation is ordered. (Only for Pygame) """
+        if self.is_pyodide or not self.visualize:
+            return False
+
+        _get_event = pygame.event.get
+
+        for event in _get_event():
+            if event.type == pygame.QUIT:
+                return True
+
+        return False
 
     def _set_round_caption(self, round_num: int):
-        self._pygame.display.set_caption("Fire Operation Simulator - Round " + str(round_num))
+        if self.visualize and not self.is_pyodide:
+            pygame.display.set_caption(f"Fire Operation Simulator - Round {round_num}")
 
     async def set_round_mode(self, round_num: int, unit_table: dict, target_list: dict):
         """ Set Round Mode
-        Internally, this function do initialization job for the object coordinates # what does this mean? and unit tabe import?
+        Internally, this function do initialization job for the object coordinates
         """
         if self.logging:
             print(f"Round Mode is now updated to {round_num}")
-        
-        if self.visualize: # i don't know why this would be done here
+
+        if self.is_pyodide:
+            pass
+            # TODO: call js method
+
+        elif self.visualize:
             self._set_round_caption(round_num)  # update window name
 
             # arrange aircrafts
@@ -135,40 +108,18 @@ class GameVisualizer(object):
         if self.logging:
             print(f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} finished. Score is {score}.")
 
-        if self.visualize: # i would need to make more images for this and caption text
+        if self.is_pyodide:
+            pass
+            # TODO: call js method
+
+        elif self.visualize:
             #TODO
 
             self._display_update()
 
-    async def assign_aircraft(self, air_sheet):
-        temp = []
-        for i in air_sheet:
-            if "D" in i:
-                i = entities.Aircraft()
-                i.image = self.drone_i
-                temp.append(i)
-            elif "H" in i:
-                i = entities.Aircraft()
-                i.image = self.heli_i
-                temp.append(i)
-            elif "A" in i:
-                i = entities.Aircraft()
-                i.image = self.plane_i
-                temp.append(i)
-            else:
-                print("error in parsing air sheet")
-            self.air_sheet = temp
-
     async def update_fire_state(self, fire):
         """ Fire Status Update """
-        count = 0
-        for i in fire:
-            if i:
-                print("im in here"+str(count))
-                self.fire[i] = i
-                self.fire_group.add(self.fire_sheet[count])
-            count += 1
-        self.fire_group.draw(self._screen)
+        #TODO
 
     async def move_object_to(self, obj_name, new_latitude, new_longitude):
         """ Move object to the given coordinates with asynchronized update operation """

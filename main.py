@@ -15,6 +15,8 @@ from src.simulator.app import run_simulator, GameVisualizer
 
 @run_simulator(host="", port=0, visualize=True, logging=True)
 async def main(visualizer: GameVisualizer):
+    """ If this app runs on Pyodide, NO-GUI Option will be ignored. """
+
     # Do your rendering here, note that it's NOT an infinite loop,
     # and it is fired only when VSYNC occurs
     # Usually 1/60 or more times per seconds on desktop, maybe less on some mobile devices
