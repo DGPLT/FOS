@@ -92,8 +92,8 @@ ___
 ** Order XML Shape **
 ```xml
 <operations>
-    <time>0600</time>
     <order>
+        <time>0600</time>
         <base>A</base>
         <aircraft_type>Airplane</aircraft_type>
         <track_number>Aircraft ID</track_number>
@@ -101,6 +101,7 @@ ___
         <course>T1, T2</course>
     </order>
     <order>
+        <time>0600</time>
         <base>B</base>
         <aircraft_type>Helicopter</aircraft_type>
         <track_number>Aircraft ID</track_number>

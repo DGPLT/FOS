@@ -83,6 +83,11 @@ class OperationOrderList(dict):
             if self._aircraft_id not in ids:
                 raise ValueError("Aircraft ID is not valid")
 
+            # Check Timeline
+            # TODO: 시간대가 현재보다 이전인 경우 확인
+            if time_line < current_time:
+                raise ValueError("Invalid time line: Does not match to current time.")
+
             #if self._target not in targets:
             #    # TODO: 타겟 자료형 좀
             #    raise ValueError("Target Name is not valid")
@@ -109,16 +114,11 @@ class OperationOrderList(dict):
             # Parse XML
             xml_parse = xmltodict.parse(order_xml)
             xml_dict = json.loads(json.dumps(xml_parse))
-            time_line = xml_dict["operations"].pop("time")
             order_list = xml_dict["operations"].pop("order")
 
             # Check XML Schema
             if len(xml_dict) != 1 or len(xml_dict["operations"]) > 0:
                 raise KeyError("Too many keys exist in the XML then expected.")
-
-            # Check Timeline
-            if time_line != current_time:
-                raise ValueError("Invalid time line: Does not match to current time.")
 
             return tuple(OperationOrderList.OperationOrder(oid, current_time, **order)
                          .validate_order(aircrafts, targets, get_base) for order in order_list)

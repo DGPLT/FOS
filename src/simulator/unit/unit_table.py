@@ -58,10 +58,6 @@ class UnitTable(dict):
         self._base_list = list(target_list.bases.keys())
         self._order_mutex: bool = False
 
-    def is_next_sequence(self) -> bool:
-        """ Returns true if current time is 0600, 0620, 0640 etc """
-        return int(self._current_time) % self._ORDER_SEQUENCE_INTERVAL == 0
-
     @property
     def current_time(self) -> str:
         return self._current_time
