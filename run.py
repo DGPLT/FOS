@@ -40,7 +40,7 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
 
 @run_simulator(**get_args())
 async def main(visualizer: GameVisualizer):
-    asyncio.sleep(0)
+    await asyncio.sleep(0)
     if visualizer.is_quit_pressed:
         print("Game Exit pressed...")
         sys.exit(0)

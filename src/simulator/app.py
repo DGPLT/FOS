@@ -5,10 +5,11 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from functools import wraps
+import asyncio
 
-from display.components import GameVisualizer
-from round.scenario import GameScenarios
-from api.api_resolver import ApiResolver
+from src.simulator.display.components import GameVisualizer
+from src.simulator.round.scenario import GameScenarios
+from src.simulator.api.api_resolver import ApiResolver
 
 
 def run_simulator(host="", port=0, visualize=True, logging=True):
@@ -29,13 +30,23 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
         async def wrapper(*args, **kwargs):
             # Connect to the server
             await api.connect()
+            # Start new round
+            await scenario.start_new_round(api, visualizer)
             while True:
                 # Run the game
                 if not await scenario.run_game(api, visualizer):
-                    break
+                    # Show Result Panel
+                    if await scenario.end_this_round(api, visualizer):  # Win
+                        # Go next round
+                        await scenario.start_new_round(api, visualizer)
+                    else:  # Lose or Game Finished
+                        break
                 visualizer.clock.tick(60)  # Set FPS 60
                 main(visualizer=visualizer, *args, **kwargs)
             # Disconnect from the server
-            await api.disconnect()
+            try:
+                await api.disconnect()
+            except Exception:
+                print("Server connection is closed properly.")
         return wrapper
     return decorator
