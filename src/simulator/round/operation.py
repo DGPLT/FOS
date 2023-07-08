@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : operation.py & Last Modded : 2023.05.16. ###
-Coded with Python 3.10 Grammar by Oh, Myoungjin
-Description : Operation Order Related Classes
+### Alias : operation.py & Last Modded : 2023.07.08. ###
+Coded with Python 3.10 Grammar by Jin, Hojin
+Description : Change OperationOrderList to List type
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import json
 from ..unit.aircraft import BasicAircraft
 
 
-class OperationOrderList(dict):
+class OperationOrderList:
     """ Operation OrderList class """
 
     class MissionType(Enum):
@@ -124,7 +124,21 @@ class OperationOrderList(dict):
                          .validate_order(aircrafts, targets, get_base) for order in order_list)
 
     def add_order(self, order_xml: str, current_time: str, get_base: Callable[[str], str],
-                  aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
-        """ Add an order to the order list """
-        self[len(self)] = self.OperationOrder.load_orders(
+              aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
+        """ Add an order to the order list or overwrite existing order with the same time and aircraft """
+        new_orders = self.OperationOrder.load_orders(
             order_xml, len(self), current_time, get_base, aircrafts, targets)
+    
+        for new_order in new_orders:
+            existing_order_index = self.find_order_index(new_order.aircraft_id, new_order.ordered_time)
+            if existing_order_index is not None:
+                self[existing_order_index] = new_order
+            else:
+                self.append(new_order)
+
+    def find_order_index(self, aircraft_id: str, ordered_time: str) -> Optional[int]:
+        """ Find the index of an order with the same aircraft ID and ordered time """
+        for index, order in enumerate(self):
+            if order.aircraft_id == aircraft_id and order.ordered_time == ordered_time:
+                return index
+        return None
