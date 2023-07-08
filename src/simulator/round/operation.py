@@ -2,7 +2,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 ### Alias : operation.py & Last Modded : 2023.07.08. ###
 Coded with Python 3.10 Grammar by Jin, Hojin
-Description : Change OperationOrderList to List type
+Description : Operation Order Related Classes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from __future__ import annotations
 
