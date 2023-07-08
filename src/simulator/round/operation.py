@@ -124,7 +124,7 @@ class OperationOrderList:
                          .validate_order(aircrafts, targets, get_base) for order in order_list)
 
     def add_order(self, order_xml: str, current_time: str, get_base: Callable[[str], str],
-              aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
+                  aircrafts: tuple[tuple[str, str], ...], targets: tuple[str]):
         """ Add an order to the order list or overwrite existing order with the same time and aircraft """
         new_orders = self.OperationOrder.load_orders(
             order_xml, len(self), current_time, get_base, aircrafts, targets)
