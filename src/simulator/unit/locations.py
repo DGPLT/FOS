@@ -39,6 +39,13 @@ class TargetList:
     class Targets(_Locations):
         """ Current Target Information List """
 
+        @staticmethod
+        def relation(key1: str, key2: str) -> int:
+            """ Return Relation between key1 and key2 """
+            _key1 = int(key1.removeprefix("T")) - 1
+            _key2 = int(key2.removeprefix("T")) - 1
+            return abs(_key1 % 3 - _key2 % 3) ** 2 + abs(_key1 % 3 - _key2 % 3) ** 2
+
         def __init__(self, coordinates, round_num: int):
             super().__init__(coordinates, "Targets")
             self._data_holder = TargetList.Target

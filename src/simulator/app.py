@@ -2,10 +2,9 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 ### Alias : app.py & Last Modded : 2023.05.12. ###
 Coded with Python 3.10 Grammar by MUN, CHAEUN
-Description : 
+Description : Simulator Main
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from functools import wraps
-import asyncio
 
 from src.simulator.display.components import GameVisualizer
 from src.simulator.round.scenario import GameScenarios

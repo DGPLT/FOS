@@ -75,38 +75,40 @@ class GameScenarios:
 
         # Update timeline
         if not unit_table.check_table_mutex():
-            unit_table.update_table()
-            data = get_current_positions()
-            visualizer.
-
-        # Check if 20 min lasts
-        if unit_table.is_next_sequence():
+            money_usage = unit_table.update_table()  # updates are applied first
+            current_round.add_used_money(money_usage)
+            current_round.add_lapsed_time(1)
+            positions = unit_table.get_current_positions()
+            visualizer.apply_dataset(current_round.target_list, unit_table, positions)
             unit_table.lock_table()  # Table lock
-            request, option, func = await api.resolve()
-
-            # If got operation order from controller
-            if request == "/order":
-                try:
-                    unit_table.apply_order(option)
-                    # If order successfully added
-                    func(code=200, message="Success")
-                    unit_table.release_table()  # Table release
-                except Exception as e:
-                    func(code=500, message=str(e))
-            elif request == "/data":
-                await func(spec_sheet=Aircrafts.to_json(),
-                           target_list=current_round.target_list.to_json(),
-                           unit_table=json.dumps(unit_table))
-            else:
-                await func(code=403)
 
         # Check if time is over 2359 hrs
-        if unit_table.current_time == "2359":
+        if unit_table.current_time == "0000":
             return False  # Game over
 
         # Check target safety
-        if selfskefjl:
+        if current_round.target_list.targets.check_all_fires_suppressed():
+            current_round.set_win()
             return False  # Win!
+
+        request, option, func = await api.resolve()
+
+        # If got operation order from controller
+        if request == "/order":
+            try:
+                unit_table.apply_order(option)
+                # If order successfully added
+                func(code=200, message="Success")
+                visualizer.add_order_log(option, unit_table.current_time)
+                unit_table.release_table()  # Table release
+            except Exception as e:
+                func(code=500, message=str(e))
+        elif request == "/data":
+            await func(spec_sheet=Aircrafts.to_json(),
+                       target_list=current_round.target_list.to_json(),
+                       unit_table=json.dumps(unit_table))
+        else:
+            await func(code=403)
 
         return True
 
@@ -115,7 +117,9 @@ class GameScenarios:
         self._current_round += 1
         if self._current_round > self._MAX_ROUND:
             raise ValueError("Round Number is out of range.")
-        await visualizer.set_round_mode()
+
+        cur_round = self.current_round
+        await visualizer.set_round_mode(cur_round.round_num, cur_round.unit_table, cur_round.target_list)
 
         # Wait until game start request is received
         while True:
@@ -123,6 +127,8 @@ class GameScenarios:
             if request == "/start":
                 await func(round=self._current_round)
                 break
+            else:
+                await func(code=401)
             await asyncio.sleep(0)
 
     async def end_this_round(self, api, visualizer) -> bool:
@@ -137,6 +143,8 @@ class GameScenarios:
             if request == "/result":
                 await func(round=cur_round.round_num, is_win=cur_round.is_win, score=cur_round.score)
                 break
+            else:
+                await func(code=401)
             await asyncio.sleep(0)
 
         return cur_round.is_win and cur_round.round_num < 3

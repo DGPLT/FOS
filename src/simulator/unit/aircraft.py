@@ -72,8 +72,13 @@ class Aircrafts:
 
     _aircraft_list = {key: BasicAircraft(val) for key, val in spec_sheet.items()}
 
+    def __getitem__(self, key): return self._aircraft_list[key]
+
     @classmethod
-    def __getitem__(cls, key): return cls._aircraft_list[key]
+    def get(cls, key, default=None): return cls._aircraft_list.get(key, default)
+
+    @classmethod
+    def get_by_aid(cls, key, default=None): return cls.get(key[:2], default)
 
     @classmethod
     def keys(cls): return cls._aircraft_list.keys()
