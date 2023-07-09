@@ -55,7 +55,7 @@ class GameVisualizer(object):
 
         if logging:
             self._log_file = open("play_log.json", "w+")
-            self._log_file.write(f"[{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}]")
+            self._log_file.write(f"['{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}']")
 
         if self.is_pyodide:
             load_js()
