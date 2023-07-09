@@ -44,9 +44,9 @@ class GameScenarios:
         def target_list(self): return self._target_list
 
         @property
-        def score(self):
+        def score(self) -> int:
             #TODO: Adjust this calculation
-            return self._time_lapse**2 + log10(self._used_money)
+            return int(((self._used_money/90.0)**1.16 + 10*log10((self._time_lapse+2)**2)) * 100)
 
         @property
         def is_win(self): return self._win
