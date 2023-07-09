@@ -112,6 +112,11 @@ class OperationOrderList(dict):
                     raise ValueError(f"Target Name [{tg}] is not valid for this aircraft {self._aircraft_id}.")
             self._mission_type.validate_target(self._aircraft_id, self._target, aircraft_model.cover_area)
 
+            # Check Validation between Aircraft Type and Mission Type
+            ## Drone can be ordered with MissionType.DIRECT
+            if self._aircraft_type == self._aircraft_type.Drone and self._mission_type != self._mission_type.DIRECT:
+                raise ValueError(f"Drone {self._aircraft_id} is not available for mission type {self._mission_type}.")
+
             # Check Assigned Aircraft Availability
             if not aircraft_unit['Available']:
                 raise ValueError(f"Aircraft {self._aircraft_id} is not available at this time. (Already Deployed)")
