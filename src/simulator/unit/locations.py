@@ -75,11 +75,7 @@ class TargetList:
 
             [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
 
-        def mark_targeted(self, target_name):
-            """ Mark Targeted to Target """
-            self[target_name].set_targeted()
-
-        def apply_targeting_operation(self, target_name: str, possibility_of_aircraft: int, still_targeted: bool) -> bool:
+        def apply_targeting_operation(self, target_name: str, possibility_of_aircraft: int) -> bool:
             """ Apply Targeting Operation - Check if fire is suppressed
             :return True: when fire is suppressed
             """
@@ -93,9 +89,6 @@ class TargetList:
                 if randrange(0, 101) <= possibility:
                     target.set_suppressed()
                     result = True
-
-            # Mark Not-Targeted/Still-Targeted
-            target.set_targeted(still_targeted)
 
             return result
 
@@ -111,7 +104,7 @@ class TargetList:
 
             # Decrease Probability of Suppressing Fire
             fires = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.FIRE]
-            [fire.set_probability(fire.probability-5) for fire in fires]  # decrease by 5
+            [fire.set_probability(fire.probability-randrange(0, 2)) for fire in fires]  # decrease by 5
 
             # Check if fire is spreading to other targets
             possibles = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.POSSIBLE]

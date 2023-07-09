@@ -75,21 +75,26 @@ class GameScenarios:
 
         # Update timeline
         if not unit_table.check_table_mutex():
-            money_usage = unit_table.update_table()  # updates are applied first
+            money_usage, suppressed = unit_table.update_table()  # updates are applied first
+
+            ## Round Information Update
             current_round.add_used_money(money_usage)
             current_round.add_lapsed_time(1)
+
+            ## Apply changes to Screen
             positions = unit_table.get_current_positions()
             visualizer.apply_dataset(current_round.target_list, unit_table, positions)
-            unit_table.lock_table()  # Table lock
 
-        # Check if time is over 2359 hrs
-        if unit_table.current_time == "0000":
-            return False  # Game over
-
-        # Check target safety
-        if current_round.target_list.targets.check_all_fires_suppressed():
-            current_round.set_win()
-            return False  # Win!
+            ## Check Target Safety
+            if suppressed:
+                current_round.set_win()
+                return False  # Win!
+            ## Check if time is over 2359 hrs
+            elif unit_table.current_time > "2359" or unit_table.current_time == "0000":
+                return False  # Game over
+            ## Normal Operation
+            else:
+                unit_table.lock_table()  # Table lock
 
         request, option, func = await api.resolve()
 
