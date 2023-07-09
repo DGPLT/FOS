@@ -117,7 +117,9 @@ class GameScenarios:
         self._current_round += 1
         if self._current_round > self._MAX_ROUND:
             raise ValueError("Round Number is out of range.")
-        await visualizer.set_round_mode()
+
+        cur_round = self.current_round
+        await visualizer.set_round_mode(cur_round.round_num, cur_round.unit_table, cur_round.target_list)
 
         # Wait until game start request is received
         while True:
