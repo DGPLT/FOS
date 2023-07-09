@@ -115,7 +115,7 @@ class TargetList:
 
             # Check if fire is spreading to other targets
             possibles = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.POSSIBLE]
-            [target.set_fire_occurred() for target in possibles if randrange(0, 101) <= target.threat]
+            [tg.set_fire_occurred() for tg in possibles if randrange(0, 101) <= tg.threat and randrange(0, 20) == 0]
 
     class Location:
         """ Coordination Holder Class """
