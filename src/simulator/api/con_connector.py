@@ -9,7 +9,7 @@ import asyncio
 
 class ConnectionBuilder(object):
     """ Open client connection to remote controller server asynchronously """
-    SIZE = 1024
+    SIZE = 4096
     ENCODING = 'utf8'
 
     def __init__(self, host: str = "", port: int = 0):
@@ -40,11 +40,15 @@ class ConnectionBuilder(object):
         await self._writer.drain()
 
     async def recv(self) -> str:
-        data = await self._reader.read(self.SIZE)
-        
-        if not data:
-            raise Exception("Socket connection closed unexpectedly.")
-        
+        fragments = []
+        while True:
+            chunk = await self._reader.read(self.SIZE)
+            if not chunk:
+                raise Exception("Socket connection closed unexpectedly.")
+            fragments.append(chunk)
+            if len(chunk) < self.SIZE:
+                break
+        data = b''.join(fragments)
         return data.decode(self.ENCODING)
 
 

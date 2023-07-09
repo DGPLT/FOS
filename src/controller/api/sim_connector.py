@@ -2,7 +2,7 @@ import asyncio
 
 HOST = "127.0.0.1"
 PORT = 8080
-SIZE = 1024
+SIZE = 4096
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     data = None
