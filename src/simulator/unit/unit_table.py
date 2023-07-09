@@ -10,6 +10,7 @@ from ..round.operation import OperationOrderList
 MissionType = OperationOrderList.MissionType
 from .locations import TargetList
 from .aircraft import Aircrafts
+get_by_aid = Aircrafts.get_by_aid
 
 
 class UnitTable(dict):
@@ -18,10 +19,10 @@ class UnitTable(dict):
     _ORDER_SEQUENCE_INTERVAL = 20
 
     # Aircraft ID List
-    _aircraft_ids = (k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
+    _aircraft_ids = tuple(k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
 
     @classmethod
-    def get_aircraft_ids(cls):
+    def get_aircraft_ids(cls) -> tuple[str, ...]:
         return cls._aircraft_ids
 
     @staticmethod
@@ -42,7 +43,8 @@ class UnitTable(dict):
             if int(t1[1]) == 9:
                 result = "10" + str(int(t1[2:]) + t2 - 60) if t1[0]=="0" else "20" + str(int(t1[2:]) + t2 - 60)
             else:
-                result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
+                result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" \
+                    else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
 
         # 2400 to 0000
         if t1[:2] == "24":
@@ -51,16 +53,12 @@ class UnitTable(dict):
         return result + "0" if len(result) == 3 else result
 
     def __init__(self, order_list: OperationOrderList, target_list: TargetList):
-        super().__init__(self._gen_init_table())
         self._current_time: str = "0559"
         self._order_list: OperationOrderList = order_list
         self._target_list: TargetList = target_list
         self._base_list = list(target_list.bases.keys())
         self._order_mutex: bool = False
-
-    def is_next_sequence(self) -> bool:
-        """ Returns true if current time is 0600, 0620, 0640 etc """
-        return int(self._current_time) % self._ORDER_SEQUENCE_INTERVAL == 0
+        super().__init__(self._gen_init_table())
 
     @property
     def current_time(self) -> str:
@@ -84,8 +82,10 @@ class UnitTable(dict):
     def __delitem__(self, key):
         raise NotImplementedError("This dictionary does not allow delete")
 
-    def update_table(self):
-        """ Update table for each minute """
+    def update_table(self) -> int:
+        """ Update table for each minute
+        :return: int: used money
+        """
 
         # One minute forward
         self._current_time = self.time_adder(self._current_time, 1)
@@ -116,7 +116,7 @@ class UnitTable(dict):
                 # TODO: Set Done to Order List
 
             elif not aircraft['Ordered'] and aircraft['Current Water'] != 100:
-                aircraft['Current Water'] += Aircrafts[aid[0:2]].get_expected_percentage_of_water_by_min(1)
+                aircraft['Current Water'] += get_by_aid(aid).get_expected_percentage_of_water_by_min(1)
 
     def calculate_position(self, l1, l2, start_time, velocity) -> tuple[int, int]:
         """ Return aircraft's position(x, y) calculated """
@@ -144,17 +144,17 @@ class UnitTable(dict):
             for order in filter(lambda x: not x.done, orders):
                 this = self[order.aircraft_id]
                 if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
-                    if int(self._current_time) < int(self['ETA']):
+                    if int(self._current_time) < int(this['ETA']):
                         loc_from = bases[this['Base']]
                         loc_to = targets[order.target[0]]
                     else:
                         loc_from = targets[order.target[0]]
                         loc_to = bases[this['Base']]
                 else:
-                    if int(self._current_time) < int(self['ETA']):
+                    if int(self._current_time) < int(this['ETA']):
                         # if current time < departure time + time to get to the lake
-                        if int(self._current_time) < int(self.time_adder(self['ETD'], self.get_dist(
-                                bases[this['Base']], lakes['L1']) / Aircrafts[order.aircraft_id[:2]].velocity)):
+                        if int(self._current_time) < int(self.time_adder(this['ETD'], self.get_dist(
+                                bases[this['Base']], lakes['L1']) / get_by_aid(order.aircraft_id).velocity)):
                             loc_from = bases[this['Base']]
                             loc_to = lakes['L1']
                         else:
@@ -165,36 +165,43 @@ class UnitTable(dict):
                         loc_to = bases[this['Base']]
 
                 positions[order.aircraft_id] = self.calculate_position(
-                    loc_from, loc_to, self['ETD'], Aircrafts[order.aircraft_id[:2]].velocity)
+                    loc_from, loc_to, this['ETD'], get_by_aid(order.aircraft_id).velocity)
 
         return positions
 
     def apply_order(self, order_xml: str):
         """ Apply orders to the table """
+        targets = self._target_list.targets
+        lakes = self._target_list.lakes
+        bases = self._target_list.bases
 
         # Let OperationOrderList Add New Orders
         ## Check if the order time is correct
-        self._order_list.add_order(order_xml, self._current_time, , )
+        self._order_list.add_order(
+            order_xml, self._current_time, get_by_aid, self._aircraft_ids, lambda aid: self[aid], targets.keys())
 
         # Apply Details of new order to the table
-        for order in self._order_list[-1]:
+        for order in self._order_list[-1]:  # TODO
             this = self[order.aircraft_id]
             this['Ordered'] = True
-            this['Available'] = False
+            this['Available'] = False  #######
 
-            estimated_time_to_back = self.get_dist(self._target_list.bases[this['Base']], self._target_list.targets[order.target[0]]) / Aircrafts[order.aircraft_id[0:2]].velocity
+            model = get_by_aid(order.aircraft_id)
+
+            estimated_time_to_back = self.get_dist(bases[this['Base']], targets[order.target[0]]) / model.velocity
             if order.mission_type in (MissionType.FILL_DIRECT, MissionType.FILL_INDIRECT):  # lake, direct/indirect to target
-                estimated_time_to_go = (self.get_dist(self._target_list.bases[this['Base']], self._target_list.lakes[this['L1']]) + self.get_dist(self._target_list.lakes[this['L1']], self._target_list.targets[order.target[0]])) / Aircrafts[order.aircraft_id[0:2]].velocity
+                estimated_time_to_go = (self.get_dist(bases[this['Base']], lakes[this['L1']])
+                                        + self.get_dist(lakes[this['L1']], targets[order.target[0]])) / model.velocity
             else:  # no lake
                 estimated_time_to_go = estimated_time_to_back
 
             # time1 : time to get to target, time2 : time to return from target
-            self[order.aircraft_id]['ETD'] = self.time_adder(self._current_time, Aircrafts[order.aircraft_id[0:2]].ETRDY)
-            self[order.aircraft_id]['ETA'] = self.time_adder(self[order.aircraft_id]['ETD'], estimated_time_to_go)
+            this['ETD'] = self.time_adder(self._current_time, model.ETRDY)
+            this['ETA'] = self.time_adder(this['ETD'], estimated_time_to_go)
 
-            self[order.aircraft_id]['ETR'] = self.time_adder(self[order.aircraft_id]['ETA'], estimated_time_to_back)
+            this['ETR'] = self.time_adder(this['ETA'], estimated_time_to_back)
 
-            # TODO: Update Target Status
+            # TODO: Update Target Status (Targetted)
 
     def _gen_init_table(self):
         """ Generate Initial Table """

@@ -12,7 +12,7 @@
 #### ii. API Resolver: Layer that abstracts the user-selected API method such as HTTP, TCP Socket and Named Pipe(optional)
 #### iii. Game Simulator: Fire Disaster Simulator which get input from API Resolver, calculate current status, and creates data that can be used to visualize game. For game visualization, the game simulation code should be completely abstracted and operate without problems in both the GUI and CLI environments.
 #### iv. GUI Visualizer/CLI Console: It can be both a GUI window and a CLI console according to the interface mode settings that the user selects.
-#### v. (DEPRECATED) Game Logger: Game Tracker/Logger that records the game progress in detail. (Required to discuss the need for real-time data transmission later)
+#### v. Game Logger: Game Tracker/Logger that records the game progress in detail. (Required to discuss the need for real-time data transmission later)
 
 ### **C. Interface**
 - The **Game Screen** has a resolution of 300 by 300. On the upper-left corner is the fire area, where the fire randomly occurs. The starting point is stationary at the lower-right corner of the screen, while a lake is located at the upper-right corner.
@@ -86,14 +86,16 @@ ___
 /result
 /disconnect
 </pre>
+- If result code is 302, then please re-request to the /result. That means the current round is over or finished.
 <pre>** Server Side API **
 /disconnect
 </pre>
 ** Order XML Shape **
+- Order Cancellation is not supported. (yet)
 ```xml
 <operations>
-    <time>0600</time>
     <order>
+        <time>0600</time>
         <base>A</base>
         <aircraft_type>Airplane</aircraft_type>
         <track_number>Aircraft ID</track_number>
@@ -101,6 +103,7 @@ ___
         <course>T1, T2</course>
     </order>
     <order>
+        <time>0600</time>
         <base>B</base>
         <aircraft_type>Helicopter</aircraft_type>
         <track_number>Aircraft ID</track_number>
