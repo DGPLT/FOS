@@ -16,8 +16,6 @@ get_by_aid = Aircrafts.get_by_aid
 class UnitTable(dict):
     """ UnitTable Management Class """
 
-    _ORDER_SEQUENCE_INTERVAL = 20
-
     # Aircraft ID List
     _aircraft_ids = tuple(k+"-"+i for i in ("A", "B") for k in Aircrafts.keys())
 
@@ -46,9 +44,13 @@ class UnitTable(dict):
                 result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" \
                     else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
 
+        ''' Disable Time Conversion
         # 2400 to 0000
-        if t1[:2] == "24":
-            return "0000"
+        if int(result[:2]) >= 24:
+            return f"{int(result[:2])-24}" + result[2:]
+        '''
+
+        #TODO: Test Required
 
         return result + "0" if len(result) == 3 else result
 
@@ -82,41 +84,70 @@ class UnitTable(dict):
     def __delitem__(self, key):
         raise NotImplementedError("This dictionary does not allow delete")
 
-    def update_table(self) -> int:
+    def update_table(self) -> tuple[int, bool]:
         """ Update table for each minute
-        :return: int: used money
+        :return tuple[int, bool]: (used money, file_suppressed)
         """
+        targets = self._target_list.targets
 
         # One minute forward
         self._current_time = self.time_adder(self._current_time, 1)
 
-        # Check if aircraft returned, update water tank
-        self.update_state()
+        # Update TargetList
+        ## Fire might be spread after this method is called
+        targets.update_target_list()
 
-        # 현재 시간이랑 도착시간이랑 비교해서 도착을 했더라 => 불이 꺼졌는지 아닌지 확인 == 일때 확인
-        ## 물탱크 0으로 만들기
+        # Update Aircraft Status
+        ## if aircraft returned, update water tank
+        used_money = self.update_state()
 
-        ## 모든 불 상태 확인
+        return used_money, targets.check_all_fires_suppressed()  # Check if all fires are suppressed
 
-
-
-    def update_state(self):
-        """ Check aircraft returned """
+    def update_state(self) -> int:
+        """ Update Aircraft Status - Increase Water Tank Level only for not Ordered Aircrafts
+        :return int: used money
+        """
+        targets = self._target_list.targets
+        order_list = self._order_list
+        used_money = 0
 
         for aid, aircraft in self.items():
-            if aircraft['Ordered'] and int(aircraft['ETR']) <= int(self._current_time):
-                # Reset Aircraft Status
-                aircraft['Ordered'] = False
-                aircraft['Available'] = True
-                aircraft['ETR'] = ""
-                aircraft['ETD'] = ""
-                aircraft['ETA'] = ""
-                aircraft['Current Water'] = 0
-
-                # TODO: Set Done to Order List
-
-            elif not aircraft['Ordered'] and aircraft['Current Water'] != 100:
+            # Ordered Aircraft =========================================================================================
+            if aircraft['Ordered']:  # 'Ordered' means that current_time is after operation_time
+                ## Check Departure -------------------------------------------------------------------------------------
+                if aircraft['Available']:  # If an aircraft is available, then it means the aircraft is not departed
+                    if int(aircraft['ETD']) <= int(self._current_time):
+                        ### Set the aircraft not available
+                        aircraft['Available'] = False
+                        ### Raise the amount of money spent
+                        used_money += get_by_aid(aid).cost
+                ## Check Arrival ---------------------------------------------------------------------------------------
+                elif int(aircraft['ETA']) == int(self._current_time):
+                    ### Check if the fire is suppressed
+                    targets.apply_targeting_operation(
+                        order_list[aid].target[-1], aircraft['Current Water'] * get_by_aid(aid).possibility / 100)
+                    ### Set Water Level 0
+                    aircraft['Current Water'] = 0
+                ## Check Return ----------------------------------------------------------------------------------------
+                elif int(aircraft['ETR']) <= int(self._current_time):
+                    ### Reset Aircraft Status
+                    aircraft['Ordered'] = False
+                    aircraft['Available'] = True
+                    aircraft['ETR'] = ""
+                    aircraft['ETD'] = ""
+                    aircraft['ETA'] = ""
+                    aircraft['Current Water'] = 0
+                    ### Set Done to Order List
+                    order_list[aid].finish_order()
+            # Not Ordered & Check Operation Time =======================================================================
+            elif int(self._order_list[aid].operation_time) <= int(self._current_time):
+                aircraft['Ordered'] = True  # Mark Ordered
+                #### Set Targeted
+            # Not Ordered & Not Full Water Tank ========================================================================
+            elif aircraft['Current Water'] < 100:
                 aircraft['Current Water'] += get_by_aid(aid).get_expected_percentage_of_water_by_min(1)
+
+        return used_money
 
     def calculate_position(self, l1, l2, start_time, velocity) -> tuple[int, int]:
         """ Return aircraft's position(x, y) calculated """
@@ -139,33 +170,32 @@ class UnitTable(dict):
         targets = self._target_list.targets
         lakes = self._target_list.lakes
         bases = self._target_list.bases
+        order_list = self._order_list
 
-        for orders in self._order_list:
-            for order in filter(lambda x: not x.done, orders):
-                this = self[order.aircraft_id]
-                if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
-                    if int(self._current_time) < int(this['ETA']):
-                        loc_from = bases[this['Base']]
-                        loc_to = targets[order.target[0]]
-                    else:
-                        loc_from = targets[order.target[0]]
-                        loc_to = bases[this['Base']]
+        for aid, this in filter(lambda x, y: not y['Available'], self.items()):
+            order = order_list[aid]
+            if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
+                if int(self._current_time) < int(this['ETA']):
+                    loc_from = bases[this['Base']]
+                    loc_to = targets[order.target[0]]
                 else:
-                    if int(self._current_time) < int(this['ETA']):
-                        # if current time < departure time + time to get to the lake
-                        if int(self._current_time) < int(self.time_adder(this['ETD'], self.get_dist(
-                                bases[this['Base']], lakes['L1']) / get_by_aid(order.aircraft_id).velocity)):
-                            loc_from = bases[this['Base']]
-                            loc_to = lakes['L1']
-                        else:
-                            loc_from = lakes['L1']
-                            loc_to = targets[order.target[0]]
+                    loc_from = targets[order.target[0]]
+                    loc_to = bases[this['Base']]
+            else:
+                if int(self._current_time) < int(this['ETA']):
+                    # if current time < departure time + time to get to the lake
+                    if int(self._current_time) < int(self.time_adder(this['ETD'], self.get_dist(
+                            bases[this['Base']], lakes['L1']) / get_by_aid(aid).velocity)):
+                        loc_from = bases[this['Base']]
+                        loc_to = lakes['L1']
                     else:
-                        loc_from = targets[order.target[0]]
-                        loc_to = bases[this['Base']]
+                        loc_from = lakes['L1']
+                        loc_to = targets[order.target[0]]
+                else:
+                    loc_from = targets[order.target[0]]
+                    loc_to = bases[this['Base']]
 
-                positions[order.aircraft_id] = self.calculate_position(
-                    loc_from, loc_to, this['ETD'], get_by_aid(order.aircraft_id).velocity)
+            positions[aid] = self.calculate_position(loc_from, loc_to, this['ETD'], get_by_aid(aid).velocity)
 
         return positions
 
@@ -180,12 +210,13 @@ class UnitTable(dict):
         self._order_list.add_order(
             order_xml, self._current_time, get_by_aid, self._aircraft_ids, lambda aid: self[aid], targets.keys())
 
-        # Apply Details of new order to the table
-        for order in self._order_list[-1]:  # TODO
-            this = self[order.aircraft_id]
-            this['Ordered'] = True
-            this['Available'] = False  #######
+        # Initialize Targeted Values
+        [targets[key].set_targeted(False) for key in targets.keys()]
 
+        # Apply Details of new order to the table
+        ## Only iterate for ongoing orders
+        for order in filter(lambda x: not x.done, self._order_list.values()):
+            this = self[order.aircraft_id]
             model = get_by_aid(order.aircraft_id)
 
             estimated_time_to_back = self.get_dist(bases[this['Base']], targets[order.target[0]]) / model.velocity
@@ -196,12 +227,12 @@ class UnitTable(dict):
                 estimated_time_to_go = estimated_time_to_back
 
             # time1 : time to get to target, time2 : time to return from target
-            this['ETD'] = self.time_adder(self._current_time, model.ETRDY)
+            this['ETD'] = self.time_adder(order.operation_time, model.ETRDY)
             this['ETA'] = self.time_adder(this['ETD'], estimated_time_to_go)
-
             this['ETR'] = self.time_adder(this['ETA'], estimated_time_to_back)
 
-            # TODO: Update Target Status (Targetted)
+            # Update Target Status (Targeted)
+            self[order.target[-1]].set_targeted()
 
     def _gen_init_table(self):
         """ Generate Initial Table """
