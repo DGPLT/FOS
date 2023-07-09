@@ -112,6 +112,7 @@ class UnitTable(dict):
         used_money = 0
 
         for aid, aircraft in self.items():
+            order = order_list.get(aid, None)
             # Ordered Aircraft =========================================================================================
             if aircraft['Ordered']:  # 'Ordered' means that current_time is after operation_time
                 ## Check Departure -------------------------------------------------------------------------------------
@@ -125,7 +126,7 @@ class UnitTable(dict):
                 elif int(aircraft['ETA']) == int(self._current_time):
                     ### Check if the fire is suppressed
                     targets.apply_targeting_operation(
-                        order_list[aid].target[-1], aircraft['Current Water'] * get_by_aid(aid).possibility / 100)
+                        order.target[-1], aircraft['Current Water'] * get_by_aid(aid).possibility / 100)
                     ### Set Water Level 0
                     aircraft['Current Water'] = 0
                 ## Check Return ----------------------------------------------------------------------------------------
@@ -138,14 +139,15 @@ class UnitTable(dict):
                     aircraft['ETA'] = ""
                     aircraft['Current Water'] = 0
                     ### Set Done to Order List
-                    order_list[aid].finish_order()
+                    order.finish_order()
             # Not Ordered & Check Operation Time =======================================================================
-            elif int(self._order_list[aid].operation_time) <= int(self._current_time):
+            elif order and int(order.operation_time) <= int(self._current_time):
                 aircraft['Ordered'] = True  # Mark Ordered
-                #### Set Targeted
             # Not Ordered & Not Full Water Tank ========================================================================
             elif aircraft['Current Water'] < 100:
                 aircraft['Current Water'] += get_by_aid(aid).get_expected_percentage_of_water_by_min(1)
+                if aircraft['Current Water'] > 100:
+                    aircraft['Current Water'] = 100
 
         return used_money
 
@@ -172,7 +174,7 @@ class UnitTable(dict):
         bases = self._target_list.bases
         order_list = self._order_list
 
-        for aid, this in filter(lambda x, y: not y['Available'], self.items()):
+        for aid, this in filter(lambda x: not x[1]['Available'], self.items()):
             order = order_list[aid]
             if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
                 if int(self._current_time) < int(this['ETA']):

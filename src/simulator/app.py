@@ -40,7 +40,7 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
                         await scenario.start_new_round(api, visualizer)
                     else:  # Lose or Game Finished
                         break
-                main(visualizer=visualizer, *args, **kwargs)
+                await main(visualizer=visualizer, *args, **kwargs)
             # Disconnect from the server
             try:
                 await api.disconnect()

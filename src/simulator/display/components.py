@@ -163,7 +163,7 @@ class GameVisualizer(object):
         # TODO
         pass
 
-    async def apply_dataset(self, target_list, unit_table, positions, order_list):
+    async def apply_dataset(self, target_list, unit_table, positions):
         """ Apply datas to Visualizer
         * Internally, call _update_unit_status and _update_fire_state
         * Add Point-in-time data to the logger

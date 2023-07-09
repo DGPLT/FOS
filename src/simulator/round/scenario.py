@@ -83,7 +83,7 @@ class GameScenarios:
 
             ## Apply changes to Screen
             positions = unit_table.get_current_positions()
-            visualizer.apply_dataset(current_round.target_list, unit_table, positions)
+            await visualizer.apply_dataset(current_round.target_list, unit_table, positions)
 
             ## Check Target Safety
             if suppressed:
@@ -103,11 +103,12 @@ class GameScenarios:
             try:
                 unit_table.apply_order(option)
                 # If order successfully added
-                func(code=200, message="Success")
+                await func(code=200, message="Success")
                 visualizer.add_order_log(option, unit_table.current_time)
                 unit_table.release_table()  # Table release
             except Exception as e:
-                func(code=500, message=str(e))
+                print(e)
+                await func(code=500, message=str(e))
         elif request == "/data":
             await func(spec_sheet=Aircrafts.to_json(),
                        target_list=current_round.target_list.to_json(),
