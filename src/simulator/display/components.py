@@ -5,6 +5,8 @@ Coded with Python 3.10 Grammar by Waters, Nathaniel
 Description : Game CLI Log Console Interface & GUI Visualization
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import sys
+import json
+from datetime import datetime
 
 _PIXEL_EXPANSION = 2.3
 _MAX_CORDINATION = 300
@@ -46,9 +48,14 @@ class GameVisualizer(object):
         :param logging: bool, if True then logging to stdout won't be operated.
         """
         self.logging: bool = logging
+        self._log_file = None
         self.visualize: bool = visualize
         self.is_pyodide: bool = sys.platform == "emscripten" or "pyodide" in sys.modules
         self._display_update = lambda: None
+
+        if logging:
+            self._log_file = open("play_log.json", "w+")
+            self._log_file.write(f"[{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}]")
 
         if self.is_pyodide:
             load_js()
@@ -63,6 +70,24 @@ class GameVisualizer(object):
             pygame.init()
             self._set_round_caption(0)
             self._screen = pygame.display.set_mode(_SCREEN_SIZE)
+
+    def __del__(self):
+        if self.logging:
+            self._log_file.close()
+
+    def logger(self, title, msg):
+        print(title.upper()+": "+msg, flush=True)
+
+        if self.logging:
+            if title == "round":
+                self._log_file.seek(1)
+                self._log_file.write("{'round': '"+msg+"'}, ")
+            elif msg[0] in ("{", "[") and msg[-1] in ("}", "]"):
+                self._log_file.seek(2)
+                self._log_file.write(f", '{title}': {msg}")
+            else:
+                self._log_file.seek(2)
+                self._log_file.write(f", '{title}': '{msg}'")
 
     def is_quit_pressed(self) -> bool:
         """ Check if game quit operation is ordered. (Only for Pygame) """
@@ -85,8 +110,7 @@ class GameVisualizer(object):
         """ Set Round Mode
         Internally, this function do initialization job for the object coordinates
         """
-        if self.logging:
-            print(f"Round Mode is now updated to {round_num}")
+        self.logger("round", f"Round Mode is now updated to {round_num}")
 
         if self.is_pyodide:
             pass
@@ -101,12 +125,12 @@ class GameVisualizer(object):
             # show selected targets and fires
             #TODO: write code for this
 
-            self._display_update()
+            #self._display_update()
+            pass
 
     async def show_score_panel(self, round_num: int, is_win: bool, score: int):
         """ Show Score Panel when a round is finished """
-        if self.logging:
-            print(f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} finished. Score is {score}.")
+        self.logger("score", f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} finished. Score is {score}.")
 
         if self.is_pyodide:
             pass
@@ -115,13 +139,41 @@ class GameVisualizer(object):
         elif self.visualize:
             #TODO
 
-            self._display_update()
+            #self._display_update()
+            pass
 
-    async def update_fire_state(self, fire):
+    async def _update_fire_state(self, target_list):
         """ Fire Status Update """
         #TODO
+        pass
 
-    async def move_object_to(self, obj_name, new_latitude, new_longitude):
+    async def _move_object_to(self, obj_name, new_latitude, new_longitude):
         """ Move object to the given coordinates with asynchronized update operation """
         #TODO
-        self._display_update()
+        #self._display_update()
+        pass
+
+    async def _update_unit_status(self, unit_table, positions):
+        """ Update Game Play Screen """
+        # TODO
+        pass
+
+    async def _update_play_time(self, current_time: str):
+        """ Update Game Play Time on the Screen """
+        # TODO
+        pass
+
+    async def apply_dataset(self, target_list, unit_table, positions, order_list):
+        """ Apply datas to Visualizer
+        * Internally, call _update_unit_status and _update_fire_state
+        * Add Point-in-time data to the logger
+        """
+        dataset = {'targets': target_list.to_json(), 'unit_table': json.dumps(unit_table)}
+        self.logger(unit_table.current_time, json.dumps(dataset))
+
+        await self._update_play_time(unit_table.current_time)
+
+    async def add_order_log(self, order_xml: str, current_time: str):
+        """ Update Order Status Log Sheet """
+        self.logger("order_"+current_time, order_xml)
+        # TODO: Show Log in the API Panel
