@@ -78,22 +78,21 @@ class ApiResolver:
                 await self._controller.send(json.dumps({"code": 400, "message": str(e)}))
             return "/order", request[len("/order/"):], self._send_operation_result
         
-        match request:
-            case "/start":
-                return request, "", self._send_game_start_signal
-            case "/data/aircraft_specsheet":
-                return "/data", "aircraft_specsheet", self._send_aircraft_specsheet
-            case "/data/target_list":
-                return "/data", "target_list", self._send_target_list
-            case "/data/unit_table":
-                return "/data", "unit_table", self._send_unit_table
-            case "/result":
-                return request, "", self._send_game_result_by_round
-            case "/disconnect":
-                await self.disconnect()
-            case _:
-                await self._controller.send(json.dumps({"code": 404, "message": "Not Found"}))
-                return request, "", lambda **kwargs: None
+        if request == "/start":
+            return request, "", self._send_game_start_signal
+        elif request == "/data/aircraft_specsheet":
+            return "/data", "aircraft_specsheet", self._send_aircraft_specsheet
+        elif request == "/data/target_list":
+            return "/data", "target_list", self._send_target_list
+        elif request == "/data/unit_table":
+            return "/data", "unit_table", self._send_unit_table
+        elif request == "/result":
+            return request, "", self._send_game_result_by_round
+        elif request == "/disconnect":
+            await self.disconnect()
+        else:
+            await self._controller.send(json.dumps({"code": 404, "message": "Not Found"}))
+            return request, "", lambda **kwargs: None
 
     async def _send_game_start_signal(self, **kwargs):
         """ Send a game start signal
