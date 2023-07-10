@@ -15,7 +15,7 @@ if __name__ == "__main__":
     elif platform.system() == "Linux":
         os.system("sudo apt-get install patchelf")
 
-    py = input("\nPlease Input python keyword : ")
+    py = input("Please Input python keyword : ")
     print("Python Version : ", end='', flush=True)
     if 1 == os.system(f"{py} --version"):
         raise Exception(f"Cannot find ({py}).")
