@@ -132,3 +132,13 @@ build.py : pyinstaller build script
 main.py : pygbag main script for web browsers
 run.py : runnable main script for desktop environment
 </pre>
+___
+
+## **7. Build and Run**
+<pre>
+pip install Cython~=3.0.0a10
+</pre>
+<pre>
+python ./setup.py develop
+python ./setup.py develop --user
+</pre>

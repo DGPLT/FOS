@@ -6,6 +6,12 @@ cython_directives = {
 }
 
 extensions = cythonize([
+    Extension(name="config.aircraft_spec_sheet",
+              sources=["config/aircraft_spec_sheet.pyx"],
+              include_dirs=[]),
+    Extension(name="config.coordinates",
+              sources=["config/coordinates.pyx"],
+              include_dirs=[]),
     Extension(name="src.simulator.app",
               sources=["src/simulator/app.pyx"],
               include_dirs=[]),
