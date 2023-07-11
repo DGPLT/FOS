@@ -17,17 +17,38 @@
         FOS
         <small>v0.1</small>
 
-        <div class="ts-4">🟢 Round 1 Running</div>
+        <div id="gamestate" class="ts-4">🟢 Round 1 Running</div>
       </a>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="pyodide.globals.get('start')()">Start</button>
-        <button class="btn btn-primary" onclick="pyodide.globals.get('stop')()">Stop</button>
-        <button class="btn btn-primary" onclick="pyodide.globals.get('reset')()">Reset</button>
+      <div class="d-flex align-items-center">
+        <button class="btn btn-link link-light" data-bs-toggle="modal" data-bs-target="#contributorModal">
+          Contributors
+        </button>
+        <div class="modal fade" id="contributorModal" tabindex="-1" aria-labelledby="contributorModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Contributors</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                ...
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="https://github.com/usfk-code-challenge-2023/FOS">
+          <img class="m-2" src="res/github.svg" width="30" alt="Github" sizes="">
+        </a>
+        <div class="btn-group m-2">
+          <button class="btn btn-primary" id="startButton">Start</button>
+          <button class="btn btn-primary" id="stopButton">Stop</button>
+          <button class="btn btn-primary" id="resetButton">Reset</button>
+        </div>
       </div>
     </div>
   </nav>
   <div class="container">
-    <div class="row">
+    <div class="row gap-4">
       <div class="col-auto">
         <div class="box" style="height: 300px;">
           <canvas id="gameview" class="rounded-3" width="300" height="300"></canvas>
@@ -88,6 +109,15 @@
       let code = await fetch("test.py").then(response => response.text());
       pyodide.runPython(code);
       await pyodide.globals.get("main")();
+      document.getElementById("startButton").addEventListener("click", () => {
+        pyodide.globals.get("start")();
+      });
+      document.getElementById("stopButton").addEventListener("click", () => {
+        pyodide.globals.get("stop")();
+      });
+      document.getElementById("resetButton").addEventListener("click", () => {
+        pyodide.globals.get("reset")();
+      });
     };
 
     main();
