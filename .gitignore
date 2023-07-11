@@ -153,3 +153,4 @@ cython_debug/
 
 # vscode project settings
 .vscode
+.DS_Store
