@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+import glob
 import subprocess
 
 
@@ -94,12 +95,13 @@ with open('build/version.rc', 'wt', encoding='utf-8') as f:
 
 # INCLUDE OR EXCLUDE MODULES
 installed_packages = re.split(r"[\r\n]", subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode('utf-8'))
+project_modules = [fname.split('.')[1][1:].replace("/", ".") for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyd", recursive=True)) if not './build/' in fname and not './dist/' in fname]
 PACKAGES = ['cryptography', 'tinyaes']
 with open("requirements.txt", "rt", encoding='utf-8') as f:  # include
     requirements = [re.split(r"[~=<>]", pkg)[0] for pkg in f.readlines() if pkg != '' and pkg != '\n']
     PACKAGES.extend(requirements)
 print("Included packages : ", PACKAGES)
-HIDDEN_IMPORTS = ['os', 'sys', 're']
+HIDDEN_IMPORTS = ['os', 'sys', 're', 'json'] + project_modules
 print("Included packages (HIDDEN) : ", HIDDEN_IMPORTS)
 EXCLUDES = list(set([pkg.split('==')[0] for pkg in installed_packages if pkg != ''] + ['tkinter']) - set(PACKAGES) - set(HIDDEN_IMPORTS))
 print("Excluded packages : ", EXCLUDES, end="\n\n")

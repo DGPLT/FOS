@@ -32,6 +32,9 @@ MANIFEST
 *.manifest
 build.key
 #*.spec
+config/*.c
+src/simulator/*.c
+src/simulator/*/*.c
 
 # Installer logs
 pip-log.txt
