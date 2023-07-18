@@ -240,12 +240,12 @@ class UnitTable(dict):
         """ Generate Initial Table """
         return {
             key: {
-                "Ordered": False,
-                "Available": True,
-                "ETR": "",
-                "ETD": "",
-                "ETA": "",
-                "Base": choice(self._base_list),
-                "Current Water": randrange(0, 101)
+                'Ordered': False,
+                'Available': True,
+                'ETR': "",
+                'ETD': "",
+                'ETA': "",
+                'Base': choice(self._base_list),
+                'Current Water': randrange(0, 101)
             } for key in self.get_aircraft_ids()
         }
