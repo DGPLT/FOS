@@ -1,26 +1,22 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : build.py & Last Modded : 2023.07.09. ###
+### Alias : build.py & Last Modded : 2023.07.12. ###
 Coded with Python 3.10 Grammar by MUN, CHAEUN
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import os
+import sys
 import platform
 
 
-if __name__ == "__main__":
-    tool = "PyInstaller"
+if platform.system() == "Windows":
+    os.system(f"TITLE PyInstaller builder")
+elif platform.system() == "Linux":
+    os.system("sudo apt-get install patchelf")
 
-    if platform.system() == "Windows":
-        os.system(f"TITLE {tool} builder")
-    elif platform.system() == "Linux":
-        os.system("sudo apt-get install patchelf")
+print("Python Version:", sys.version, flush=True)
 
-    py = input("Please Input python keyword : ")
-    print("Python Version : ", end='', flush=True)
-    if 1 == os.system(f"{py} --version"):
-        raise Exception(f"Cannot find ({py}).")
+os.system(f'"{sys.executable}" -m pip install tinyaes cryptography pyinstaller')
+os.system(f'"{sys.executable}" setup.py develop --user')
+os.system(f'"{sys.executable}" -m PyInstaller build.spec --noconfirm')
 
-    os.system(f"{py} -m pip install tinyaes cryptography pyinstaller")
-    os.system(f"{py} -m PyInstaller build.spec --noconfirm")
-
-    input("\nBuild Finished.")
+input("\nBuild Finished. Press any key to terminate.")

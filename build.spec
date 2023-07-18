@@ -95,16 +95,19 @@ with open('build/version.rc', 'wt', encoding='utf-8') as f:
 
 # INCLUDE OR EXCLUDE MODULES
 installed_packages = re.split(r"[\r\n]", subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode('utf-8'))
-project_modules = [fname.split('.')[1][1:].replace("/", ".") for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyd", recursive=True)) if not './build/' in fname and not './dist/' in fname]
-PACKAGES = ['cryptography', 'tinyaes']
+project_modules = [fname.split('.')[1][1:].replace("/", ".") for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyd", recursive=True)) if './build/' not in fname and './dist/' not in fname and './cpython/' not in fname and './emsdk/' not in fname]
+PACKAGES = ['cryptography', 'tinyaes', 'pyparsing', 'setuptools', 'pyinstaller-hooks-contrib', 'xml.etree', 'xml.etree.ElementTree']
 with open("requirements.txt", "rt", encoding='utf-8') as f:  # include
     requirements = [re.split(r"[~=<>]", pkg)[0] for pkg in f.readlines() if pkg != '' and pkg != '\n']
     PACKAGES.extend(requirements)
 print("Included packages : ", PACKAGES)
-HIDDEN_IMPORTS = ['os', 'sys', 're', 'json'] + project_modules
+HIDDEN_IMPORTS = ['os', 'sys', 're', 'json'] + list(set(project_modules + PACKAGES))
 print("Included packages (HIDDEN) : ", HIDDEN_IMPORTS)
-EXCLUDES = list(set([pkg.split('==')[0] for pkg in installed_packages if pkg != ''] + ['tkinter']) - set(PACKAGES) - set(HIDDEN_IMPORTS))
-print("Excluded packages : ", EXCLUDES, end="\n\n")
+if input("\nDo you want to set package list need to be excluded? (y to yes) : ") == 'y':
+    EXCLUDES = list(set([pkg.split('==')[0] for pkg in installed_packages if pkg != ''] + ['tkinter']) - set(HIDDEN_IMPORTS))
+    print("Excluded packages : ", EXCLUDES, end="\n\n")
+else:
+    EXCLUDES = ['tkinter']
 
 
 # BUILD
@@ -123,9 +126,6 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False
 )
-
-#a.datas += [('icon.ico', 'icon.ico', 'DATA')
-#			]  # some files to add (--add-data option)
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
