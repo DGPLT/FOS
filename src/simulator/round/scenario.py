@@ -112,7 +112,8 @@ class GameScenarios:
         elif request == "/data":
             await func(spec_sheet=Aircrafts.to_json(),
                        target_list=current_round.target_list.to_json(),
-                       unit_table=json.dumps(unit_table))
+                       unit_table=json.dumps(unit_table),
+                       time=unit_table.current_time)
         else:
             await func(code=403)
 
