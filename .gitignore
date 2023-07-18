@@ -154,6 +154,8 @@ cython_debug/
 
 # vscode project settings
 .vscode
+# MacOS
+.DS_Store
 
 # Game Play Log
 play_log.json
