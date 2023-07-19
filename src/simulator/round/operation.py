@@ -135,10 +135,10 @@ class OperationOrderList(dict):
             # Parse XML
             xml_parse = xmltodict.parse(order_xml)
             xml_dict = json.loads(json.dumps(xml_parse))
-            order_list = xml_dict["operations"].pop("order", [])
+            order_list = xml_dict['operations'].pop("order", [])
 
             # Check XML Schema
-            if len(xml_dict) != 1 or len(xml_dict["operations"]) > 0:
+            if len(xml_dict) != 1 or len(xml_dict['operations']) > 0:
                 raise KeyError("Too many keys exist in the XML then expected.")
 
             return {order['aircraft_id']: OperationOrderList.OperationOrder(**order).validate_order(

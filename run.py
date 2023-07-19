@@ -43,7 +43,7 @@ async def main(visualizer: GameVisualizer):
     if visualizer.visualize:
         visualizer.clock.tick(60)  # Set FPS 60
 
-        if visualizer.is_quit_pressed:
+        if visualizer.is_quit_pressed():
             print("Game Exit pressed...")
             sys.exit(0)
 

@@ -32,6 +32,9 @@ MANIFEST
 *.manifest
 build.key
 #*.spec
+config/*.c
+src/simulator/*.c
+src/simulator/*/*.c
 
 # Installer logs
 pip-log.txt
@@ -154,8 +157,6 @@ cython_debug/
 
 # vscode project settings
 .vscode
-# MacOS
-.DS_Store
 
 # Game Play Log
 play_log.json

@@ -27,13 +27,13 @@ class BasicAircraft:
 
     def __init__(self, dictionary):
         Type, CoverArea = self.Type, self.CoverArea
-        self._type: Type = Type(dictionary["Aircraft Type"])
-        self._velocity: int = int(dictionary["Velocity"])
-        self._etrdy: int = int(dictionary["ETRDY"])
-        self._cost: int = int(dictionary["Cost"])
-        self._area: CoverArea = CoverArea(int(dictionary["Cover Area"]))
-        self._tank: float = float(dictionary["Water Tank"])
-        self._poss: int = int(dictionary["Possibility"])
+        self._type: Type = Type(dictionary['Aircraft Type'])
+        self._velocity: int = int(dictionary['Velocity'])
+        self._etrdy: int = int(dictionary['ETRDY'])
+        self._cost: int = int(dictionary['Cost'])
+        self._area: CoverArea = CoverArea(int(dictionary['Cover Area']))
+        self._tank: float = float(dictionary['Water Tank'])
+        self._poss: int = int(dictionary['Possibility'])
         if not (0 <= self._poss <= 100):
             raise ValueError("Possibility must be between 0 and 100.")
 
@@ -57,7 +57,7 @@ class BasicAircraft:
 
     def get_expected_percentage_of_water_by_min(self, minutes: int) -> float:
         """ Returns the estimated water percentage by time """
-        if self._tank >= minutes:
+        if self._tank <= minutes:
             return 100
         else:
             return minutes / self._tank * 100

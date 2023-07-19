@@ -116,13 +116,13 @@ class TargetList:
             self._loc_dict = loc_dict
 
         @property
-        def lat(self): return self._loc_dict["latitude"]
+        def lat(self): return self._loc_dict['latitude']
 
         @property
-        def long(self): return self._loc_dict["longitude"]
+        def long(self): return self._loc_dict['longitude']
 
         @property
-        def coords(self) -> tuple[int, int]: return self._loc_dict["longitude"], self._loc_dict["latitude"]
+        def coords(self) -> tuple[int, int]: return self._loc_dict['longitude'], self._loc_dict['latitude']
 
     class Target(Location):
         """ Target Coordination Holder Class """
@@ -137,13 +137,13 @@ class TargetList:
                               100 if self.TargetType(target_type) == self.TargetType.FIRE else 0)
 
         def set_property(self, target_type: int, threat: int, priority: int, targeted: bool, probability: int):
-            self._loc_dict["targeted"] = targeted
-            self._loc_dict["priority"] = priority
-            self._loc_dict["type"] = target_type
-            self._loc_dict["threat"] = abs(threat) if abs(threat) <= 100 else 100
-            self._loc_dict["probability"] = probability
+            self._loc_dict['targeted'] = targeted
+            self._loc_dict['priority'] = priority
+            self._loc_dict['type'] = target_type
+            self._loc_dict['threat'] = abs(threat) if abs(threat) <= 100 else 100
+            self._loc_dict['probability'] = probability
 
-        def set_targeted(self, targeted=True): self._loc_dict["targeted"] = targeted
+        def set_targeted(self, targeted=True): self._loc_dict['targeted'] = targeted
 
         def set_suppressed(self):
             self.set_property(0, 0, 0, False, 0)
@@ -153,25 +153,25 @@ class TargetList:
                 probability = 0
             elif probability > 100:
                 probability = 100
-            self._loc_dict["probability"] = probability
+            self._loc_dict['probability'] = probability
 
         def set_fire_occurred(self):
-            self._loc_dict["type"] = 2
-            self._loc_dict["probability"] = 100
+            self._loc_dict['type'] = 2
+            self._loc_dict['probability'] = 100
 
         @property
-        def is_targeted(self): return self._loc_dict["targeted"]
+        def is_targeted(self): return self._loc_dict['targeted']
 
         @property
-        def priority(self): return self._loc_dict["priority"]
+        def priority(self): return self._loc_dict['priority']
 
         @property
-        def type(self): return self.TargetType(self._loc_dict["type"])
+        def type(self): return self.TargetType(self._loc_dict['type'])
 
         @property
-        def threat(self): return self._loc_dict["threat"]
+        def threat(self): return self._loc_dict['threat']
 
         @property
-        def probability(self): return self._loc_dict["probability"]
+        def probability(self): return self._loc_dict['probability']
 
     def to_json(self): return json.dumps(self._coordinates)
