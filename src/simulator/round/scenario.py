@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by ??????
 Description : Game Scenarios (Rounds)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from math import log10
+import traceback
 import asyncio
 import json
 
@@ -107,8 +108,8 @@ class GameScenarios:
                 visualizer.add_order_log(option, unit_table.current_time)
                 unit_table.release_table()  # Table release
             except Exception as e:
-                print(e)
-                await func(code=500, message=str(e))
+                traceback.print_exc()
+                await func(code=500, message=repr(e))
         elif request == "/data":
             await func(spec_sheet=Aircrafts.to_json(),
                        target_list=lambda: current_round.target_list.to_json(),
