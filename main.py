@@ -10,11 +10,11 @@ import asyncio
 #some globals
 
 # Do init here and load any assets right now to avoid lag at runtime or network errors.
-from src.simulator.app import run_simulator, GameVisualizer
+import src.simulator.app as app
 
 
-@run_simulator(host="", port=0, visualize=True, logging=True)
-async def main(visualizer: GameVisualizer):
+@app.run_simulator(host="", port=0, visualize=True, logging=True)
+async def main(visualizer: app.GameVisualizer):
     """ If this app runs on Pyodide, NO-GUI Option will be ignored. """
 
     # Do your rendering here, note that it's NOT an infinite loop,

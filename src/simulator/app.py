@@ -6,7 +6,7 @@ Description : Simulator Main
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from functools import wraps
 
-from src.simulator.display.components import GameVisualizer
+from src.simulator.display import get_impl
 from src.simulator.round.scenario import GameScenarios
 from src.simulator.api.api_resolver import ApiResolver
 
@@ -19,7 +19,9 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
         port = int(input("Please set a port of the server to connect to: "))
 
     # Initialize
-    visualizer = GameVisualizer(visualize=visualize, logging=logging)
+    global GameVisualizer
+    GameVisualizer = get_impl(visualize=visualize)
+    visualizer = GameVisualizer(logging=logging)
     scenario = GameScenarios()
     api = ApiResolver()
     api.set_host_addr(host, port)
