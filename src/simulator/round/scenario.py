@@ -105,7 +105,7 @@ class GameScenarios:
                 unit_table.apply_order(option)
                 # If order successfully added
                 await func(code=200, message="Success")
-                visualizer.add_order_log(option, unit_table.current_time)
+                await visualizer.add_order_log(option, unit_table.current_time)
                 unit_table.release_table()  # Table release
             except Exception as e:
                 traceback.print_exc()

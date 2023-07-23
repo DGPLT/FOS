@@ -36,10 +36,10 @@ class UnitTable(dict):
     def time_adder(t1: str, t2: int) -> str:
         """ Add t2 (int) to t1 (str) """
         if int(t1[2:]) + t2 < 60:
-            result = "0" + str(int(t1) + t2) if t1[0]=="0" else str(int(t1) + t2)
+            result = "0" + str(int(t1) + t2) if t1[0] == "0" else str(int(t1) + t2)
         else:
             if int(t1[1]) == 9:
-                result = "10" + str(int(t1[2:]) + t2 - 60) if t1[0]=="0" else "20" + str(int(t1[2:]) + t2 - 60)
+                result = "10" + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" else "20" + str(int(t1[2:]) + t2 - 60)
             else:
                 result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" \
                     else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
@@ -186,8 +186,8 @@ class UnitTable(dict):
             else:
                 if int(self._current_time) < int(this['ETA']):
                     # if current time < departure time + time to get to the lake
-                    if int(self._current_time) < int(self.time_adder(this['ETD'], self.get_dist(
-                            bases[this['Base']], lakes['L1']) / get_by_aid(aid).velocity)):
+                    if int(self._current_time) < int(self.time_adder(this['ETD'], round(self.get_dist(
+                            bases[this['Base']].coords, lakes['L1'].coords) / get_by_aid(aid).velocity))):
                         loc_from = bases[this['Base']]
                         loc_to = lakes['L1']
                     else:
@@ -197,7 +197,7 @@ class UnitTable(dict):
                     loc_from = targets[order.target[0]]
                     loc_to = bases[this['Base']]
 
-            positions[aid] = self.calculate_position(loc_from, loc_to, this['ETD'], get_by_aid(aid).velocity)
+            positions[aid] = self.calculate_position(loc_from.coords, loc_to.coords, this['ETD'], get_by_aid(aid).velocity)
 
         return positions
 
@@ -217,24 +217,24 @@ class UnitTable(dict):
 
         # Apply Details of new order to the table
         ## Only iterate for ongoing orders
-        for order in filter(lambda x: not x.done, self._order_list.values()):
+        for order in filter(lambda x: not x.is_finished, self._order_list.values()):
             this = self[order.aircraft_id]
             model = get_by_aid(order.aircraft_id)
 
-            estimated_time_to_back = self.get_dist(bases[this['Base']], targets[order.target[0]]) / model.velocity
+            estimated_time_to_back = self.get_dist(bases[this['Base']].coords, targets[order.target[0]].coords) / model.velocity
             if order.mission_type in (MissionType.FILL_DIRECT, MissionType.FILL_INDIRECT):  # lake, direct/indirect to target
-                estimated_time_to_go = (self.get_dist(bases[this['Base']], lakes[this['L1']])
-                                        + self.get_dist(lakes[this['L1']], targets[order.target[0]])) / model.velocity
+                estimated_time_to_go = (self.get_dist(bases[this['Base'].coords], lakes[this['L1']].coords)
+                                        + self.get_dist(lakes[this['L1']].coords, targets[order.target[0]].coords)) / model.velocity
             else:  # no lake
                 estimated_time_to_go = estimated_time_to_back
 
             # time1 : time to get to target, time2 : time to return from target
-            this['ETD'] = self.time_adder(order.operation_time, model.ETRDY)
-            this['ETA'] = self.time_adder(this['ETD'], estimated_time_to_go)
-            this['ETR'] = self.time_adder(this['ETA'], estimated_time_to_back)
+            this['ETD'] = self.time_adder(order.operation_time, round(model.ETRDY))
+            this['ETA'] = self.time_adder(this['ETD'], round(estimated_time_to_go))
+            this['ETR'] = self.time_adder(this['ETA'], round(estimated_time_to_back))
 
             # Update Target Status (Targeted)
-            self[order.target[-1]].set_targeted()
+            targets[order.target[-1]].set_targeted()
 
     def _gen_init_table(self):
         """ Generate Initial Table """

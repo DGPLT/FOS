@@ -7,7 +7,7 @@ Description : Python Runner for Desktop Application
 import sys
 import asyncio
 
-from src.simulator.app import run_simulator, GameVisualizer
+import src.simulator.app as app
 
 
 def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
@@ -38,8 +38,8 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
     return result
 
 
-@run_simulator(**get_args())
-async def main(visualizer: GameVisualizer):
+@app.run_simulator(**get_args())
+async def main(visualizer: app.GameVisualizer):
     if visualizer.visualize:
         visualizer.clock.tick(60)  # Set FPS 60
 
