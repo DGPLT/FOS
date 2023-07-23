@@ -217,7 +217,7 @@ class UnitTable(dict):
 
         # Apply Details of new order to the table
         ## Only iterate for ongoing orders
-        for order in filter(lambda x: not x.done, self._order_list.values()):
+        for order in filter(lambda x: not x.is_finished, self._order_list.values()):
             this = self[order.aircraft_id]
             model = get_by_aid(order.aircraft_id)
 
