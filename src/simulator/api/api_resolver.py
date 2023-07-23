@@ -129,7 +129,7 @@ class ApiResolver:
             await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {'code': 200, 'message': "Success", 'data': kwargs['target_list'], 'time': kwargs['time']}))
+                {'code': 200, 'message': "Success", 'data': kwargs['target_list'](), 'time': kwargs['time']}))
 
     async def _send_unit_table(self, **kwargs):
         """ Send the current unit table status
@@ -141,7 +141,7 @@ class ApiResolver:
             await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {'code': 200, 'message': "Success", 'data': kwargs['unit_table'], 'time': kwargs['time']}))
+                {'code': 200, 'message': "Success", 'data': kwargs['unit_table'](), 'time': kwargs['time']}))
 
     async def _send_operation_result(self, **kwargs):
         """ Send operation apply trial result of an order
