@@ -17,7 +17,12 @@
         <a class="navbar-brand" href="#">
           FOS
           <small>v1.0.0.0</small>
-          <div id="gamestate" class="ts-4">🟢 Round 1 Running</div>
+          <div class="row">
+            <div class="col">
+              <div id="gamestate" class="ts-4">🟢 Round 1 Running</div>
+            </div>
+            <div class="col" id="gametime">01:00</div>
+          </div>
         </a>
         <div class="d-flex align-items-center">
           <button class="btn btn-link link-light" data-bs-toggle="modal" data-bs-target="#contributorModal">
@@ -27,7 +32,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">Contributors</h1>
+                  <h1 class="modal-title fs-5" id="contributorModalLabel">Contributors</h1>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -52,9 +57,29 @@
             <img class="m-2" src="./res/github.svg" width="30" alt="Github" sizes="">
           </a>
           <div class="btn-group m-2">
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#scorePanelModal">
+              Download Log
+            </button>
+          </div>
+          <div class="btn-group m-2">
             <button class="btn btn-primary" id="startButton">Start</button>
             <button class="btn btn-primary" id="stopButton">Stop</button>
             <button class="btn btn-primary" id="resetButton">Reset</button>
+          </div>
+          <div class="modal fade" id="scorePanelModal" tabindex="-1" aria-labelledby="scorePanelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="scorePanelModalLabel">Scores</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="score-panel-text"></div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" id="downloadButton">Download Play Log</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -72,48 +97,57 @@
           </div>
         </div>
       </div>
-      <table class="table m-4" id="specsheet">
+      <br>
+      <div class="row gap-4">
+        <div class="col">
+          <table class="table m-0" id="target">
+            <thead>
+            <tr>
+              <th scope="col">Targeted</th>
+              <th scope="col">Name</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
+              <th scope="col">Type</th>
+              <th scope="col">Threat</th>
+              <th scope="col">Success Possibility(%)</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="unit">
+            <thead>
+            <tr>
+              <th scope="col">Ordered</th>
+              <th scope="col">Available</th>
+              <th scope="col">Time of Return</th>
+              <th scope="col">Departure Time</th>
+              <th scope="col">Arrival Time</th>
+              <th scope="col">Base</th>
+              <th scope="col">Aircraft ID</th>
+              <th scope="col">Water Level</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+      <br>
+      <table class="table m-0" id="specsheet">
         <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Aircraft</th>
-            <th scope="col">Velocity (km/h)</th>
-            <th scope="col">Time to Ready (min)</th>
-            <th scope="col">Cost (USD)</th>
-            <th scope="col">Cover Area</th>
-            <th scope="col">Time Filling Water Tank (min)</th>
-            <th scope="col">Success Possibility(%)</th>
-          </tr>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Aircraft</th>
+          <th scope="col">Velocity (km/h)</th>
+          <th scope="col">Time to Ready (min)</th>
+          <th scope="col">Cost (USD)</th>
+          <th scope="col">Cover Area</th>
+          <th scope="col">Time Filling Water Tank (min)</th>
+          <th scope="col">Success Possibility(%)</th>
+        </tr>
         </thead>
       </table>
-      <table class="table m-4" id="target">
-        <thead>
-          <tr>
-            <th scope="col">Targeted</th>
-            <th scope="col">Name</th>
-            <th scope="col">Priority</th>
-            <th scope="col">Latitude</th>
-            <th scope="col">Longitude</th>
-            <th scope="col">Type</th>
-            <th scope="col">Threat</th>
-            <th scope="col">Success Possibility(%)</th>
-          </tr>
-        </thead>
-      </table>
-      <table class="table m-4" id="unit">
-        <thead>
-          <tr>
-            <th scope="col">Ordered</th>
-            <th scope="col">Available</th>
-            <th scope="col">Time of Return</th>
-            <th scope="col">Departure Time</th>
-            <th scope="col">Arrival Time</th>
-            <th scope="col">Base</th>
-            <th scope="col">Aircraft ID</th>
-            <th scope="col">Water Level</th>
-          </tr>
-        </thead>
-      </table>
+      <br>
     </div>
     <script>
       async function main() {
@@ -128,7 +162,10 @@
           pyodide.globals.get("stop")();
         });
         document.getElementById("resetButton").addEventListener("click", () => {
-          pyodide.globals.get("reset")();
+          location.reload();
+        });
+        document.getElementById("downloadButton").addEventListener("click", () => {
+          location.reload();
         });
       };
 

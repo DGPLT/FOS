@@ -53,6 +53,9 @@ class BasicAircraft:
     def cover_area(self) -> CoverArea: return self._area
 
     @property
+    def water_tank(self) -> float: return self._tank
+
+    @property
     def possibility(self) -> int: return self._poss
 
     def get_expected_percentage_of_water_by_min(self, minutes: int) -> float:
