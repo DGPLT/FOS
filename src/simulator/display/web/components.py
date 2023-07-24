@@ -135,7 +135,8 @@ class JSVisualizer(GameVisualizer):
 
         def __int__(self, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
                     spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
-                    score_panel_id: str = "score-panel-text", api_log_id: str = "output"):
+                    score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
+                    api_log_id: str = "output"):
             getElementById = js.document.getElementById
 
             self.screen_size = JSVisualizer.get_screen_size()
@@ -176,6 +177,8 @@ class JSVisualizer(GameVisualizer):
 
             self.score_panel = js.HTMLElement = getElementById(score_panel_id)
             self.score_panel_id = score_panel_id
+            self.score_modal = js.HTMLElement = getElementById(score_modal_id)
+            self.score_modal_id = score_modal_id
 
             self.positions: dict[str, tuple[int, int]] = {}
             self.targets = None
@@ -213,9 +216,8 @@ class JSVisualizer(GameVisualizer):
             unit = self.unit_table_obj
             [unit.append(key, packager(key, val)) for key, val in unit_table.items()]
 
-        def launch_score_panel(self, round_num: int, is_win: bool, score: int):
-            # TODO: Launch Score Modal
-            pass
+        def launch_score_panel(self):
+            js.bootstrap.Modal.getOrCreateInstance(self.score_modal).show()
 
         def append_current_round_score(self, round_num: int, is_win: bool, score: int):
             self.score_panel.innerHTML += f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} Score: {score}\n\n"
@@ -258,11 +260,13 @@ class JSVisualizer(GameVisualizer):
 
     def __init__(self, logging: bool = True, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
                  spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
-                 score_panel_id: str = "score-panel-text", api_log_id: str = "output"):
+                 score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
+                 api_log_id: str = "output"):
         super().__init__(logging)
         self._elements = self.JSElements(canvas_id, unit_table_id, target_table_id,
                                          spec_sheet_id, game_state_id, game_time_id,
-                                         score_panel_id, api_log_id)
+                                         score_modal_id, score_panel_id,
+                                         api_log_id)
 
         self._game_state = self.GameState.UNKNOWN
         self._round = 0
@@ -292,7 +296,7 @@ class JSVisualizer(GameVisualizer):
         await super().show_score_panel(round_num, is_win, score)
         await self.set_game_state(self.GameState.END)
         self._elements.append_current_round_score(round_num, is_win, score)
-        self._elements.launch_score_panel(round_num, is_win, score)
+        self._elements.launch_score_panel()
 
     async def _update_fire_state(self, target_list):
         """ Fire Status Update """
