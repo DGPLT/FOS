@@ -10,8 +10,8 @@ from src.simulator.display.components import GameVisualizer
 class PyArcadeVisualizer(GameVisualizer):
     _PIXEL_EXPANSION = 2.3
     _MAX_CORDINATION = 300
-    _SCREEN_WIDTH = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
-    _SCREEN_HEIGHT = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
+    _SCREEN_WIDTH = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
+    _SCREEN_HEIGHT = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_SIZE = (_SCREEN_WIDTH, _SCREEN_HEIGHT)
 
     visualize = True
@@ -45,7 +45,7 @@ class PyArcadeVisualizer(GameVisualizer):
 
 
 
-    async def set_round_mode(self, round_num: int, unit_table: dict, target_list: dict):
+    async def set_round_mode(self, round_num: int, unit_table, target_list):
         """ Set Round Mode
         Internally, this function do initialization job for the object coordinates
         """
@@ -86,13 +86,7 @@ class PyArcadeVisualizer(GameVisualizer):
         #TODO
         pass
 
-    async def _move_object_to(self, obj_name, new_latitude, new_longitude):
-        """ Move object to the given coordinates with asynchronized update operation """
-        #TODO
-        #self._display_update()
-        pass
-
-    async def _update_unit_status(self, unit_table, positions):
+    async def _update_unit_status(self, unit_table, positions: dict[str, tuple[int, int]]):
         """ Update Game Play Screen """
         # TODO
         pass
@@ -100,4 +94,8 @@ class PyArcadeVisualizer(GameVisualizer):
     async def _update_play_time(self, current_time: str):
         """ Update Game Play Time on the Screen """
         # TODO
+        pass
+
+    async def _display_update(self):
+        """ Refresh/Update Screen """
         pass

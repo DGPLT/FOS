@@ -5,9 +5,22 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : Python Runner for Web Application
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
+from enum import Enum
 
 # Try explicitly to declare all your globals at once to facilitate compilation later.
-#some globals
+looper = []  # message queue for ui loop
+
+
+class Handle(Enum):
+    PAUSE = 0
+    START = 1
+
+
+def pause(): looper.append(Handle.PAUSE)
+
+
+def start(): looper.append(Handle.START)
+
 
 # Do init here and load any assets right now to avoid lag at runtime or network errors.
 import src.simulator.app as app
@@ -21,7 +34,21 @@ async def main(visualizer: app.GameVisualizer):
     # and it is fired only when VSYNC occurs
     # Usually 1/60 or more times per seconds on desktop, maybe less on some mobile devices
 
-    await asyncio.sleep(0)  # Very important, and keep it 0
+    while True:
+        await asyncio.sleep(0)  # Very important, and keep it 0
+
+        state = await visualizer.get_game_state()
+        if looper:
+            msg = looper.pop()
+            if msg == Handle.PAUSE and state != state.PAUSE:
+                visualizer.set_game_state(state.PAUSE)
+                continue
+            elif msg == Handle.START and state == state.PAUSE:
+                visualizer.set_game_state(state.RUNNING)
+                break
+        else:
+            if state != state.PAUSE:
+                break
 
 
 # This is the program entry point:

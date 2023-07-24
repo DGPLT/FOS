@@ -13,8 +13,8 @@ class GameVisualizer(object):
     """ Game Visualizer Interface """
     _PIXEL_EXPANSION = 2.3
     _MAX_CORDINATION = 300
-    _SCREEN_WIDTH = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
-    _SCREEN_HEIGHT = int(_MAX_CORDINATION * _PIXEL_EXPANSION)
+    _SCREEN_WIDTH = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
+    _SCREEN_HEIGHT = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_SIZE = (_SCREEN_WIDTH, _SCREEN_HEIGHT)
 
     is_pyodide: bool = sys.platform == "emscripten" or "pyodide" in sys.modules
@@ -25,6 +25,7 @@ class GameVisualizer(object):
         self._log_file = None
 
         if logging:
+            # TODO: Fix Error
             self._log_file = open("play_log.json", "w+")
             self._log_file.write(f"['{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}']")
 
@@ -46,11 +47,12 @@ class GameVisualizer(object):
                 self._log_file.seek(2)
                 self._log_file.write(f", '{title}': '{msg}'")
 
-    async def set_round_mode(self, round_num: int, unit_table: dict, target_list: dict):
+    async def set_round_mode(self, round_num: int, unit_table, target_list):
         """ Set Round Mode
         Internally, this function do initialization job for the object coordinates
         """
         self.logger("round", f"Round Mode is now updated to {round_num}")
+        await self.apply_dataset(target_list, unit_table, {})
 
     async def show_score_panel(self, round_num: int, is_win: bool, score: int):
         """ Show Score Panel when a round is finished """
@@ -60,11 +62,7 @@ class GameVisualizer(object):
         """ Fire Status Update """
         pass
 
-    async def _move_object_to(self, obj_name, new_latitude, new_longitude):
-        """ Move object to the given coordinates with asynchronized update operation """
-        pass
-
-    async def _update_unit_status(self, unit_table, positions):
+    async def _update_unit_status(self, unit_table, positions: dict[str, tuple[int, int]]):
         """ Update Game Play Screen """
         pass
 
@@ -72,7 +70,7 @@ class GameVisualizer(object):
         """ Update Game Play Time on the Screen """
         pass
 
-    async def apply_dataset(self, target_list, unit_table, positions):
+    async def apply_dataset(self, target_list, unit_table, positions: dict[str, tuple[int, int]]):
         """ Apply datas to Visualizer
         * Internally, call _update_unit_status and _update_fire_state
         * Add Point-in-time data to the logger
@@ -80,8 +78,16 @@ class GameVisualizer(object):
         dataset = {'targets': target_list.to_json(), 'unit_table': json.dumps(unit_table)}
         self.logger(unit_table.current_time, json.dumps(dataset))
 
-        await self._update_play_time(unit_table.current_time)
+        await self._update_play_time(unit_table.current_time[-2:]+":"+unit_table.current_time[:-2])
+        await self._update_fire_state(target_list)
+        await self._update_unit_status(unit_table, positions)
+
+        await self._display_update()
 
     async def add_order_log(self, order_xml: str, current_time: str):
         """ Update Order Status Log Sheet """
         self.logger("order_"+current_time, order_xml)
+
+    async def _display_update(self):
+        """ Refresh/Update Screen """
+        pass
