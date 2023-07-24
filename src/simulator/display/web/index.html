@@ -159,7 +159,7 @@
           pyodide.globals.get("start")();
         });
         document.getElementById("stopButton").addEventListener("click", () => {
-          pyodide.globals.get("stop")();
+          pyodide.globals.get("pause")();
         });
         document.getElementById("resetButton").addEventListener("click", () => {
           location.reload();
