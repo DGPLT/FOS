@@ -128,8 +128,8 @@ class JSVisualizer(GameVisualizer):
                 for data in row_data:
                     insertCell().innerHTML = str(data)
 
-            def _get_row_obj(self, _id) -> js.HTMLTableRowElement:
-                if _id is not self.ids:
+            def _get_row_obj(self, _id: str) -> js.HTMLTableRowElement:
+                if _id not in self.ids:
                     raise KeyError(f"Table Row id={_id} is not exists.")
                 return self.getElementById(_id)
 
@@ -137,6 +137,7 @@ class JSVisualizer(GameVisualizer):
                 row = self.obj.insertRow()
                 row.setAttribute("id", _id)  # type: ignore
                 self.ids.append(_id)
+                print("current ids", self.ids)
                 self._insert_to_row(row, row_data)
 
             def remove(self, _id: str):
@@ -145,9 +146,11 @@ class JSVisualizer(GameVisualizer):
                 row.parentElement.removeChild(row)  # type: ignore
 
             def update(self, _id: str, row_data: list | tuple):
-                if _id is not self.ids:
+                if _id not in self.ids:
+                    print(_id + " is not exist")
                     return self.append(_id, row_data)
                 row = self._get_row_obj(_id)
+                print(_id + " table updating.......")
                 for _ in range(len(row_data)):
                     row.deleteCell(0)  # type: ignore
                 self._insert_to_row(row, row_data)
@@ -216,14 +219,14 @@ class JSVisualizer(GameVisualizer):
                                        x.cover_area.name, str(x.water_tank), str(x.possibility))
             get = spec_sheet.get
             spec = self.spec_sheet_obj
-            [spec.append(_id, packager(_id, get(_id))) for _id in spec_sheet.keys()]
+            [spec.update(_id, packager(_id, get(_id))) for _id in spec_sheet.keys()]
 
         def update_target_table(self, target_list):
             packager = lambda k, o: (str(o.is_targeted), k, str(o.priority), str(o.lat), str(o.long),
                                      o.type.name, str(o.threat), str(o.probability))
             targets = target_list.targets
             target = self.target_table_obj
-            [target.append(key, packager(key, targets[key])) for key in targets.keys()]
+            [target.update(key, packager(key, targets[key])) for key in targets.keys()]
 
         def set_aircraft_positions(self, positions: dict[str, tuple[int, int]]):
             self.positions = positions
@@ -232,7 +235,7 @@ class JSVisualizer(GameVisualizer):
             packager = lambda k, o: (str(o['Ordered']), k, str(o['Available']), o['ETR'],
                                      o['ETD'], o['ETA'], o['Base'], str(o['Current Water']))
             unit = self.unit_table_obj
-            [unit.append(key, packager(key, val)) for key, val in unit_table.items()]
+            [unit.update(key, packager(key, val)) for key, val in unit_table.items()]
 
         def launch_score_panel(self):
             js.bootstrap.Modal.getOrCreateInstance(self.score_modal).show()
@@ -261,13 +264,17 @@ class JSVisualizer(GameVisualizer):
 
             FIRE_IMG_RES = JSVisualizer.FIRE_IMG_RES
             drawImage = self.canvas.drawImage
+            self.canvas.strokeStyle = "rgb(230, 87, 81)"  # Cherry Red
+            strokeRect = self.canvas.strokeRect
             size = self.fire_size
             shift = round(size / 2)
             for t in self.targets.keys():
                 target = self.targets[t]
                 t_type = target.type
                 if t_type != t_type.NONE:
-                    # TODO: Draw RED Block
+                    # draw red block
+                    strokeRect(target.long, target.lat, size, size)
+                    # show fire
                     if t_type == t_type.FIRE:
                         drawImage(FIRE_IMG_RES, target.long - shift, target.lat - shift, size, size)
 
