@@ -287,8 +287,8 @@ class JSVisualizer(GameVisualizer):
 
         def draw(self):
             self.draw_background()
-            self.draw_aircrafts()
             self.draw_fires()
+            self.draw_aircrafts()
 
     def __init__(self, logging: bool = True, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
                  spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
