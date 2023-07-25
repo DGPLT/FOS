@@ -22,6 +22,7 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
             --port [Port, Int] : port to connect to
             --visualize [0/1] : visualize or not
             --logging [0/1] : enable log printing using stdout or not
+            --websocket [0/1] : enable websocket instead of normal tcp socket or not
             """)
             sys.exit(0)
 
@@ -34,6 +35,8 @@ def get_args() -> dict[str: str, str: int, str: bool, str: bool]:
                 result["visualize"] = bool(int(argv[index + 1]))
             case True, "--logging":
                 result["logging"] = bool(int(argv[index + 1]))
+            case True, "--websocket":
+                result["use_websocket"] = bool(int(argv[index + 1]))
 
     return result
 

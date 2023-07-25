@@ -78,7 +78,7 @@ class GameVisualizer(object):
         dataset = {'targets': target_list.to_json(), 'unit_table': json.dumps(unit_table)}
         self.logger(unit_table.current_time, json.dumps(dataset))
 
-        await self._update_play_time(unit_table.current_time[-2:]+":"+unit_table.current_time[:-2])
+        await self._update_play_time(unit_table.current_time[:-2]+":"+unit_table.current_time[-2:])
         await self._update_fire_state(target_list)
         await self._update_unit_status(unit_table, positions)
 

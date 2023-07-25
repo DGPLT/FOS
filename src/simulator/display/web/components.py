@@ -36,8 +36,8 @@ class JSVisualizer(GameVisualizer):
     _aircraft_variations = ("A", "B")
     _aircraft_ids = tuple(k+"-"+i for i in _aircraft_variations for k in Aircrafts.keys())
 
-    @staticmethod
-    async def load_image(route: str):
+    @classmethod
+    async def load_image(cls, route: str):
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         img: js.HTMLImageElement = js.Image.new()  # type: ignore
@@ -54,16 +54,35 @@ class JSVisualizer(GameVisualizer):
 
         img.onload = on_load
         # set timeout of 5 seconds
-        loop.call_later(0.1, timeout)
+        loop.call_later(5, timeout)
 
-        img.src = JSVisualizer.RESOURCE_PATH + route
+        img.src = cls.RESOURCE_PATH + route
 
         return await future
 
-    FIRE_IMG_RES = await load_image(FIRE_IMG_SOURCE)
-    get_aircraft_res = lambda _id: _id[0] + "/" + _id[1:] + ".png"
-    aircraft_img_poll = {x: load_image(get_aircraft_res(x.split("-")[0])) for x in _aircraft_ids}
-    AIRCRAFT_IMG_RES = {_id: img for _id, img in zip(aircraft_img_poll.keys(), await asyncio.gather(*aircraft_img_poll.values()))}
+    @classmethod
+    @property
+    def FIRE_IMG_RES(cls):
+        try:
+            return cls._FIRE_IMG_RES
+        except AttributeError:
+            raise AttributeError("The initializer must be executed first.")
+
+    @classmethod
+    @property
+    def AIRCRAFT_IMG_RES(cls):
+        try:
+            return cls._AIRCRAFT_IMG_RES
+        except AttributeError:
+            raise AttributeError("The initializer must be executed first.")
+
+    @classmethod
+    async def initializer(cls):
+        cls._FIRE_IMG_RES = await cls.load_image(cls.FIRE_IMG_SOURCE)
+
+        get_aircraft_res = lambda _id: _id[0] + "/" + _id[1:] + ".png"
+        aircraft_img_poll = {x: cls.load_image(get_aircraft_res(x.split("-")[0])) for x in cls._aircraft_ids}
+        cls._AIRCRAFT_IMG_RES = {_id: img for _id, img in zip(aircraft_img_poll.keys(), await asyncio.gather(*aircraft_img_poll.values()))}
 
     class AircraftModel(Enum):
         # define image size as of when the map size is 300px
@@ -86,15 +105,15 @@ class JSVisualizer(GameVisualizer):
 
         def to_str(self, current_round: int) -> str:
             if self == self.RUNNING:
-                return f"🟢 {current_round} Running"
+                return f"🟢 Round {current_round} Running"
             elif self == self.END:
-                return f"🔴 {current_round} End"
+                return f"🔴 Round {current_round} End"
             elif self == self.ERROR:
-                return f"🟠 {current_round} Error"
+                return f"🟠 Round {current_round} Error"
             elif self == self.PAUSE:
-                return f"🟡 {current_round} Pause"
+                return f"🟡 Round {current_round} Pause"
             else:
-                return f"⚪ {current_round} Unknown"
+                return f"⚪ Round {current_round} Unknown"
 
     class JSElements(object):
         class JSTable(object):
@@ -133,17 +152,15 @@ class JSVisualizer(GameVisualizer):
                     row.deleteCell(0)  # type: ignore
                 self._insert_to_row(row, row_data)
 
-        def __int__(self, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
-                    spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
-                    score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
-                    api_log_id: str = "output"):
+        def __init__(self, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
+                     spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
+                     score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
+                     api_log_id: str = "output"):
             getElementById = js.document.getElementById
 
             self.screen_size = JSVisualizer.get_screen_size()
             self.fire_size = round(40 * JSVisualizer.get_pixel_expansion())
             self.get_relative_airc_size = JSVisualizer.AircraftModel.get_relative_size
-            self.AIRCRAFT_IMG_RES = JSVisualizer.AIRCRAFT_IMG_RES
-            self.FIRE_IMG_RES = JSVisualizer.FIRE_IMG_RES
 
             self.api_log = js.HTMLElement = getElementById(api_log_id)
             self.api_log_id = api_log_id
@@ -192,7 +209,7 @@ class JSVisualizer(GameVisualizer):
             self.game_time.innerHTML = current_time
 
         def set_target_status(self, target_list):
-            self.targets = target_list
+            self.targets = target_list.targets
 
         def update_spec_table(self, spec_sheet):
             packager = lambda _id, x: (x.type.name, _id, str(x.velocity), str(x.ETRDY), str(x.cost),
@@ -204,8 +221,9 @@ class JSVisualizer(GameVisualizer):
         def update_target_table(self, target_list):
             packager = lambda k, o: (str(o.is_targeted), k, str(o.priority), str(o.lat), str(o.long),
                                      o.type.name, str(o.threat), str(o.probability))
+            targets = target_list.targets
             target = self.target_table_obj
-            [target.append(key, packager(key, target_list[key])) for key in target_list.keys()]
+            [target.append(key, packager(key, targets[key])) for key in targets.keys()]
 
         def set_aircraft_positions(self, positions: dict[str, tuple[int, int]]):
             self.positions = positions
@@ -230,7 +248,7 @@ class JSVisualizer(GameVisualizer):
 
         def draw_aircrafts(self):
             get_relative_size = self.get_relative_airc_size
-            AIRCRAFT_IMG_RES = self.AIRCRAFT_IMG_RES
+            AIRCRAFT_IMG_RES = JSVisualizer.AIRCRAFT_IMG_RES
             drawImage = self.canvas.drawImage
             for aid, pos in self.positions.items():
                 size = get_relative_size(aid)
@@ -241,7 +259,7 @@ class JSVisualizer(GameVisualizer):
             if self.targets is None:
                 return
 
-            FIRE_IMG_RES = self.FIRE_IMG_RES
+            FIRE_IMG_RES = JSVisualizer.FIRE_IMG_RES
             drawImage = self.canvas.drawImage
             size = self.fire_size
             shift = round(size / 2)

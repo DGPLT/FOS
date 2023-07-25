@@ -6,6 +6,9 @@ Description : Python Runner for Web Application
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
 from enum import Enum
+from js import prompt
+__builtins__.input = prompt
+
 
 # Try explicitly to declare all your globals at once to facilitate compilation later.
 looper = []  # message queue for ui loop
@@ -26,7 +29,11 @@ def start(): looper.append(Handle.START)
 import src.simulator.app as app
 
 
-@app.run_simulator(host="", port=0, visualize=True, logging=True)
+async def init():
+    await app.GameVisualizer.initializer()
+
+
+@app.run_simulator(host="", port=0, visualize=True, logging=True, use_websocket=True)
 async def main(visualizer: app.GameVisualizer):
     """ If this app runs on Pyodide, NO-GUI Option will be ignored. """
 
@@ -37,7 +44,7 @@ async def main(visualizer: app.GameVisualizer):
     while True:
         await asyncio.sleep(0)  # Very important, and keep it 0
 
-        state = await visualizer.get_game_state()
+        state = visualizer.get_game_state()
         if looper:
             msg = looper.pop()
             if msg == Handle.PAUSE and state != state.PAUSE:
@@ -49,10 +56,3 @@ async def main(visualizer: app.GameVisualizer):
         else:
             if state != state.PAUSE:
                 break
-
-
-# This is the program entry point:
-asyncio.run(main())
-
-# Do not add anything from here
-# asyncio.run is non-blocking on pygame-wasm

@@ -11,7 +11,7 @@ from src.simulator.round.scenario import GameScenarios
 from src.simulator.api.api_resolver import ApiResolver
 
 
-def run_simulator(host="", port=0, visualize=True, logging=True):
+def run_simulator(host="", port=0, visualize=True, logging=True, use_websocket=False):
     if not host:
         host = input("Please specify a host to connect to: ")
 
@@ -23,7 +23,7 @@ def run_simulator(host="", port=0, visualize=True, logging=True):
     GameVisualizer = get_impl(visualize=visualize)
     visualizer = GameVisualizer(logging=logging)
     scenario = GameScenarios()
-    api = ApiResolver()
+    api = ApiResolver(use_websocket)
     api.set_host_addr(host, port)
 
     def decorator(main):

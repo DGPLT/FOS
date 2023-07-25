@@ -19,7 +19,7 @@
           <small>v1.0.0.0</small>
           <div class="row">
             <div class="col">
-              <div id="gamestate" class="ts-4">🟢 Round 1 Running</div>
+              <div id="gamestate" class="ts-4">⚪ Round 0 Unknown</div>
             </div>
             <div class="col" id="gametime">01:00</div>
           </div>
@@ -152,8 +152,12 @@
     <script>
       async function main() {
         let pyodide = await loadPyodide();
+        await pyodide.loadPackage("micropip")
+		const micropip = pyodide.pyimport("micropip");
+		await micropip.install("http://127.0.0.1:8000/fos_simulator-1.0.0.0-py3-none-any.whl");
         let code = await fetch("main.py").then(response => response.text());
         pyodide.runPython(code);
+        await pyodide.globals.get("init")();
         await pyodide.globals.get("main")();
         document.getElementById("startButton").addEventListener("click", () => {
           pyodide.globals.get("start")();
@@ -165,7 +169,18 @@
           location.reload();
         });
         document.getElementById("downloadButton").addEventListener("click", () => {
-          location.reload();
+          let play_log = pyodide.FS.readFile("play_log.json", {encoding: "utf8"});
+          const file = new File([play_log], "play_log.json", {type: "text/plain"});
+
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(file)
+          link.href = url
+          link.download = file.name
+          document.body.appendChild(link)
+          link.click()
+
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
         });
       };
 

@@ -1,2 +1,2 @@
-pygame~=2.4.0
 xmltodict~=0.13.0
+wasmsockets~=0.1.4
