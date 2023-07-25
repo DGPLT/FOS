@@ -19,7 +19,8 @@ class WebConnectionBuilder:
         print("webRTC channel connected!")
 
     def send(self, msg):
-        msg = msg.encode(self.ENCODING)
+        if type(msg) == str:
+            msg = msg.encode(self.ENCODING)
         js.rtcDataChannel.send(msg)
 
     def recv(self):
