@@ -136,7 +136,6 @@ class JSVisualizer(GameVisualizer):
                 row = self.obj.insertRow()
                 row.setAttribute("id", _id)  # type: ignore
                 self.ids.append(_id)
-                print("current ids", self.ids)
                 self._insert_to_row(row, row_data)
 
             def remove(self, _id: str):
@@ -146,10 +145,8 @@ class JSVisualizer(GameVisualizer):
 
             def update(self, _id: str, row_data: list | tuple):
                 if _id not in self.ids:
-                    print(_id + " is not exist")
                     return self.append(_id, row_data)
                 row = self._get_row_obj(_id)
-                print(_id + " table updating.......")
                 for _ in range(len(row_data)):
                     row.deleteCell(0)  # type: ignore
                 self._insert_to_row(row, row_data)
@@ -160,10 +157,10 @@ class JSVisualizer(GameVisualizer):
                      api_log_id: str = "output"):
             getElementById = js.document.getElementById
 
-            #self._pixel_ex
-
+            self._pixel_expansion = JSVisualizer.get_pixel_expansion()
             self.screen_size = JSVisualizer.get_screen_size()
-            self.fire_size = round(40 * JSVisualizer.get_pixel_expansion())
+            self.fire_border_size = round(40 * self._pixel_expansion)
+            self.fire_size = round(74 * self._pixel_expansion)
             self.get_relative_airc_size = JSVisualizer.AircraftModel.get_relative_size
 
             self.api_log = js.HTMLElement = getElementById(api_log_id)
@@ -258,7 +255,7 @@ class JSVisualizer(GameVisualizer):
             for aid, pos in self.positions.items():
                 size = get_relative_size(aid)
                 shift = round(size / 2)
-                drawImage(AIRCRAFT_IMG_RES[aid], pos[0] - shift, pos[1] - shift, size, size)
+                drawImage(AIRCRAFT_IMG_RES[aid], pos[0]-shift, self.screen_size[1]-pos[1]-shift, size, size)
 
         def draw_fires(self):
             if self.targets is None:
@@ -268,17 +265,21 @@ class JSVisualizer(GameVisualizer):
             drawImage = self.canvas.drawImage
             self.canvas.strokeStyle = "rgb(230, 87, 81)"  # Cherry Red
             strokeRect = self.canvas.strokeRect
-            size = self.fire_size
-            shift = round(size / 2)
+            expandsion = self._pixel_expansion
+            shift = round(self.fire_size / 2)
+            border_shift = round(self.fire_border_size / 2)
+            print(self.fire_size, self.fire_border_size, shift, border_shift)
             for t in self.targets.keys():
                 target = self.targets[t]
                 t_type = target.type
+                long = round(target.long*expandsion)
+                lat = self.screen_size[1] - round(target.lat*expandsion)
                 if t_type != t_type.NONE:
                     # draw red block
-                    strokeRect(target.long, target.lat, size, size)
+                    strokeRect(long-border_shift, lat-border_shift, self.fire_border_size, self.fire_border_size)
                     # show fire
                     if t_type == t_type.FIRE:
-                        drawImage(FIRE_IMG_RES, target.long - shift, target.lat - shift, size, size)
+                        drawImage(FIRE_IMG_RES, long-shift, lat-round(shift*1.5), self.fire_size, self.fire_size)
 
         def draw(self):
             self.draw_background()
@@ -357,19 +358,19 @@ class CustomLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord):
         text = self.format(record)
         log_level = record.levelname
-        if log_level == 'DEBUG':
-            color = 'white'
-        elif log_level == 'INFO':
-            color = 'white'
-        elif log_level == 'WARNING':
-            color = 'orange'
-        elif log_level == 'ERROR':
-            color = 'darkred'  # dark red
+        if log_level == "DEBUG":
+            color = "white"
+        elif log_level == "INFO":
+            color = "white"
+        elif log_level == "WARNING":
+            color = "orange"
+        elif log_level == "ERROR":
+            color = "darkred"  # dark red
 
-        self.output_element.appendChild(js.document.createElement('span'))
+        self.output_element.appendChild(js.document.createElement("span"))
         self.output_element.lastChild.innerHTML = text  # type: ignore
         self.output_element.lastChild.style.color = color  # type: ignore
-        self.output_element.appendChild(js.document.createElement('br'))  # type: ignore
+        self.output_element.appendChild(js.document.createElement("br"))  # type: ignore
 
     def flush(self):
         pass
