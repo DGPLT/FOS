@@ -53,19 +53,41 @@ class ConnectionBuilder(object):
         return data.decode(self.ENCODING)
 
 
-class WSConnectionBuilder(ConnectionBuilder):
+class WebConnectionBuilder(ConnectionBuilder):
     def __init__(self, host: str = "", port: int = 0):
         super().__init__(host, port)
+        self.is_rtc = False
+        import js as _js
+        global js
+        js = _js
 
     async def connect(self):
-        self._ws = WasmSocket(self.server_addr)
-        await self._ws.connect()
+        if self._server_ip == "rtc":
+            print("trying to connect with webRTC...")
+            js.rtcConnect()
+            while not js.rtcConnected:
+                await asyncio.sleep(0)
+            print("webRTC channel connected!")
+            self.is_rtc = True
+        else:
+            self._ws = WasmSocket(self.server_addr)
+            await self._ws.connect()
 
     async def send(self, msg):
-        await self._ws.send(msg.encode(self.ENCODING))
+        msg = msg.encode(self.ENCODING)
+        if self.is_rtc:
+            js.rtcDataChannel.send(msg)
+        else:
+            await self._ws.send(msg)
 
     async def recv(self):
-        msg = await self._ws.recv()
+        if self.is_rtc:
+            while not js.rtcBuffer:
+                await asyncio.sleep(0)
+            msg = js.rtcBuffer
+            js.rtcBuffFlush()
+        else:
+            msg = await self._ws.recv()
         if type(msg) == str:
             pass
         elif type(msg) == bytes:
@@ -76,7 +98,7 @@ class WSConnectionBuilder(ConnectionBuilder):
 
     @property
     def server_addr(self):
-        return f"ws://{self._server_ip}:{self._server_port}"
+        return self._server_ip if self.is_rtc else f"ws://{self._server_ip}:{self._server_port}"
 
 
 if __name__ == "__main__":

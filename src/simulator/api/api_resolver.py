@@ -9,14 +9,14 @@ import json
 from typing import Callable
 import xml.etree.ElementTree as elemTree
 
-from .con_connector import ConnectionBuilder, WSConnectionBuilder
+from .con_connector import ConnectionBuilder, WebConnectionBuilder
 
 
 class ApiResolver:
     """ Asynchronous API resolver """
 
     def __init__(self, use_websocket: bool = False):
-        self._controller = WSConnectionBuilder() if use_websocket else ConnectionBuilder()
+        self._controller = WebConnectionBuilder() if use_websocket else ConnectionBuilder()
         self._connected = False
 
     @property

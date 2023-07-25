@@ -14,6 +14,8 @@ from src.simulator.api.api_resolver import ApiResolver
 def run_simulator(host="", port=0, visualize=True, logging=True, use_websocket=False):
     if not host:
         host = input("Please specify a host to connect to: ")
+        if host == "rtc":
+            port = host
 
     if not port:
         port = int(input("Please set a port of the server to connect to: "))
