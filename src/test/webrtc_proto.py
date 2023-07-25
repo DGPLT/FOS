@@ -143,7 +143,7 @@ async def main():
         <course>{random_target}</course>
     </order>
 </operations>'''
-
+    time.sleep(1)
     print("/order")
     rtc.send(f"/order/{xml}".encode())
     order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
@@ -210,7 +210,7 @@ async def main():
                 <course>{random_target[0]}</course>
             </order>
             </operations>'''
-
+            time.sleep(1)
             rtc.send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
@@ -313,6 +313,7 @@ async def main():
         </order>
     </operations>'''
 
+    time.sleep(1)
     rtc.send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
@@ -379,7 +380,8 @@ async def main():
                 <course>{random_target[0]}</course>
             </order>
             </operations>'''
-
+            
+            time.sleep(1)
             rtc.send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
@@ -486,7 +488,8 @@ async def main():
             <course>{random_target[2]}</course>
         </order>
     </operations>'''
-
+    
+    time.sleep(1)
     rtc.send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
@@ -550,6 +553,7 @@ async def main():
             </order>
             </operations>'''
 
+            time.sleep(1)
             rtc.send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
