@@ -186,7 +186,8 @@ async def accept(websocket):
                 <course>{random_target[0]}</course>
             </order>
             </operations>'''
-
+            
+            time.sleep(1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -288,7 +289,7 @@ async def accept(websocket):
             <course>{random_target[1]}</course>
         </order>
     </operations>'''    
-
+    time.sleep(1)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -355,7 +356,7 @@ async def accept(websocket):
                 <course>{random_target[0]}</course>
             </order>
             </operations>'''
-
+            time.sleep(1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -462,7 +463,7 @@ async def accept(websocket):
             <course>{random_target[2]}</course>
         </order>
     </operations>'''     
-
+    time.sleep(1)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -525,7 +526,7 @@ async def accept(websocket):
                 <course>{random_target[0]}</course>
             </order>
             </operations>'''
-
+            time.sleep(1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
