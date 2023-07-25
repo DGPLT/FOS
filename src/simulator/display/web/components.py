@@ -117,8 +117,6 @@ class JSVisualizer(GameVisualizer):
 
     class JSElements(object):
         class JSTable(object):
-            getElementById = js.document.getElementById
-
             def __init__(self, table: js.HTMLTableElement):
                 self.obj: js.HTMLTableElement = table
                 self.ids = []
@@ -131,7 +129,8 @@ class JSVisualizer(GameVisualizer):
             def _get_row_obj(self, _id: str) -> js.HTMLTableRowElement:
                 if _id not in self.ids:
                     raise KeyError(f"Table Row id={_id} is not exists.")
-                return self.getElementById(_id)
+                print(_id, type(_id))
+                return js.document.getElementById(_id)
 
             def append(self, _id: str, row_data: list | tuple):
                 row = self.obj.insertRow()
@@ -160,6 +159,8 @@ class JSVisualizer(GameVisualizer):
                      score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
                      api_log_id: str = "output"):
             getElementById = js.document.getElementById
+
+            #self._pixel_ex
 
             self.screen_size = JSVisualizer.get_screen_size()
             self.fire_size = round(40 * JSVisualizer.get_pixel_expansion())
@@ -252,6 +253,7 @@ class JSVisualizer(GameVisualizer):
         def draw_aircrafts(self):
             get_relative_size = self.get_relative_airc_size
             AIRCRAFT_IMG_RES = JSVisualizer.AIRCRAFT_IMG_RES
+            _PIXEL_EXPANSION = JSVisualizer._PIXEL_EXPANSION
             drawImage = self.canvas.drawImage
             for aid, pos in self.positions.items():
                 size = get_relative_size(aid)
