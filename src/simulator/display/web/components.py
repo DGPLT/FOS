@@ -10,6 +10,7 @@ from src.simulator.display.components import GameVisualizer
 from src.simulator.unit.aircraft import Aircrafts
 
 import js
+import re
 import asyncio
 import logging
 from enum import Enum
@@ -92,9 +93,11 @@ class JSVisualizer(GameVisualizer):
 
         @classmethod
         def get_relative_size(cls, _id) -> int:
+            _id = re.split(r"[0-9]", _id.split("-")[0])[0]
             for e in cls:
-                if e.name == _id.split("-"):
+                if e.name == _id:
                     return round(e.value * JSVisualizer.get_pixel_expansion())
+            raise ValueError(f"Cannot find a AircraftModel with id={_id}.")
 
     class GameState(Enum):
         RUNNING = 0
