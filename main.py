@@ -6,8 +6,6 @@ Description : Python Runner for Web Application
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
 from enum import Enum
-from js import prompt
-__builtins__.input = prompt
 
 
 # Try explicitly to declare all your globals at once to facilitate compilation later.

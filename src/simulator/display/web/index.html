@@ -155,8 +155,11 @@
         await pyodide.loadPackage("micropip")
 		const micropip = pyodide.pyimport("micropip");
 		await micropip.install("http://127.0.0.1:8000/fos_simulator-1.0.0.0-py3-none-any.whl");
-        let code = await fetch("main.py").then(response => response.text());
-        pyodide.runPython(code);
+        pyodide.runPython(`
+          from main import *
+          from js import prompt
+          __builtins__.input = prompt
+        `);
         await pyodide.globals.get("init")();
         await pyodide.globals.get("main")();
         document.getElementById("startButton").addEventListener("click", () => {
