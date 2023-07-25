@@ -17,6 +17,7 @@
 
         async function main() {
             pyodide = await loadPyodide();
+            await pyodide.loadPackage("pandas")
             pyodide.runPython(`
                 from js import prompt
                 __builtins__.input = prompt
