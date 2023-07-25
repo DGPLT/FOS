@@ -141,9 +141,8 @@ class UnitTable(dict):
                     ### Set Done to Order List
                     order.finish_order()
             # Not Ordered & Check Operation Time =======================================================================
-            elif order and int(order.operation_time) <= int(self._current_time):
-                if(order.is_finished == False):
-                    aircraft['Ordered'] = True  # Mark Ordered
+            elif order and not order.is_finished and int(order.operation_time) <= int(self._current_time):
+                aircraft['Ordered'] = True  # Mark Ordered
             # Not Ordered & Not Full Water Tank ========================================================================
             elif aircraft['Current Water'] < 100:
                 aircraft['Current Water'] += get_by_aid(aid).get_expected_percentage_of_water_by_min(1)
