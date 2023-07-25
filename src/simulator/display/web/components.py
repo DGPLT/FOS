@@ -87,16 +87,16 @@ class JSVisualizer(GameVisualizer):
 
     class AircraftModel(Enum):
         # define image size as of when the map size is 300px
-        D = 16
-        H = 32
-        A = 32
+        D = (16, 0)  # (pixel_size, _dum_val)
+        H = (32, 0)
+        A = (32, 1)
 
         @classmethod
         def get_relative_size(cls, _id) -> int:
             _id = re.split(r"[0-9]", _id.split("-")[0])[0]
             for e in cls:
                 if e.name == _id:
-                    return round(e.value * JSVisualizer.get_pixel_expansion())
+                    return round(e.value[0] * JSVisualizer.get_pixel_expansion())
             raise ValueError(f"Cannot find a AircraftModel with id={_id}.")
 
     class GameState(Enum):
@@ -242,7 +242,7 @@ class JSVisualizer(GameVisualizer):
             js.bootstrap.Modal.getOrCreateInstance(self.score_modal).show()
 
         def append_current_round_score(self, round_num: int, is_win: bool, score: int):
-            self.score_panel.innerHTML += f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} Score: {score}\n\n"
+            self.score_panel.innerHTML += f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} Score: {score}<br><br>"
 
         def append_order_log(self, order_xml: str, current_time: str):  # Cannot be Static
             logging.info("order_" + current_time + " " + order_xml)
@@ -254,11 +254,12 @@ class JSVisualizer(GameVisualizer):
             get_relative_size = self.get_relative_airc_size
             AIRCRAFT_IMG_RES = JSVisualizer.AIRCRAFT_IMG_RES
             _PIXEL_EXPANSION = JSVisualizer._PIXEL_EXPANSION
+            expansion = self._pixel_expansion
             drawImage = self.canvas.drawImage
             for aid, pos in self.positions.items():
                 size = get_relative_size(aid)
                 shift = round(size / 2)
-                drawImage(AIRCRAFT_IMG_RES[aid], pos[0]-shift, self.screen_size[1]-pos[1]-shift, size, size)
+                drawImage(AIRCRAFT_IMG_RES[aid], pos[0]*expansion-shift, self.screen_size[1]-pos[1]*expansion-shift, size, size)
 
         def draw_fires(self):
             if self.targets is None:
@@ -268,15 +269,15 @@ class JSVisualizer(GameVisualizer):
             drawImage = self.canvas.drawImage
             self.canvas.strokeStyle = "rgb(230, 87, 81)"  # Cherry Red
             strokeRect = self.canvas.strokeRect
-            expandsion = self._pixel_expansion
+            expansion = self._pixel_expansion
             shift = round(self.fire_size / 2)
             border_shift = round(self.fire_border_size / 2)
             print(self.fire_size, self.fire_border_size, shift, border_shift)
             for t in self.targets.keys():
                 target = self.targets[t]
                 t_type = target.type
-                long = round(target.long*expandsion)
-                lat = self.screen_size[1] - round(target.lat*expandsion)
+                long = round(target.long*expansion)
+                lat = self.screen_size[1] - round(target.lat*expansion)
                 if t_type != t_type.NONE:
                     # draw red block
                     strokeRect(long-border_shift, lat-border_shift, self.fire_border_size, self.fire_border_size)
