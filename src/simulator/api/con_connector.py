@@ -57,13 +57,13 @@ class WebConnectionBuilder(ConnectionBuilder):
     def __init__(self, host: str = "", port: int = 0):
         super().__init__(host, port)
         self.is_rtc = False
-        import js as _js
-        global js
-        js = _js
 
     async def connect(self):
         if self._server_ip == "rtc":
             print("trying to connect with webRTC...")
+            import js as _js
+            global js
+            js = _js
             js.rtcConnect()
             while not js.rtcConnected:
                 await asyncio.sleep(0)
