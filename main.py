@@ -46,11 +46,11 @@ async def main(visualizer: app.GameVisualizer):
         if looper:
             msg = looper.pop()
             if msg == Handle.PAUSE and state != state.PAUSE:
-                visualizer.set_game_state(state.PAUSE)
+                await visualizer.set_game_state(state.PAUSE)
                 print("Game Paused...")
                 continue
             elif msg == Handle.START and state == state.PAUSE:
-                visualizer.set_game_state(state.RUNNING)
+                await visualizer.set_game_state(state.RUNNING)
                 print("Resume Game!")
                 break
         else:
