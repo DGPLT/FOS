@@ -76,7 +76,7 @@ class GameScenarios:
 
         # Update timeline
         if not unit_table.check_table_mutex():
-            money_usage, suppressed = unit_table.update_table()  # updates are applied first
+            money_usage, suppressed, can_continue = unit_table.update_table()  # updates are applied first
 
             ## Round Information Update
             current_round.add_used_money(money_usage)
@@ -91,7 +91,7 @@ class GameScenarios:
                 current_round.set_win()
                 return False  # Win!
             ## Check if time is over 2359 hrs
-            elif unit_table.current_time > "2359" or unit_table.current_time == "0000":
+            elif not can_continue or unit_table.current_time > "2359" or unit_table.current_time == "0000":
                 return False  # Game over
             ## Normal Operation
             else:

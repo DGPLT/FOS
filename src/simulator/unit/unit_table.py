@@ -84,7 +84,7 @@ class UnitTable(dict):
     def __delitem__(self, key):
         raise NotImplementedError("This dictionary does not allow delete")
 
-    def update_table(self) -> tuple[int, bool]:
+    def update_table(self) -> tuple[int, bool, bool]:
         """ Update table for each minute
         :return tuple[int, bool]: (used money, file_suppressed)
         """
@@ -95,13 +95,16 @@ class UnitTable(dict):
 
         # Update TargetList
         ## Fire might be spread after this method is called
-        targets.update_target_list()
+        can_continue = targets.update_target_list()
 
         # Update Aircraft Status
         ## if aircraft returned, update water tank
         used_money = self.update_state()
 
-        return used_money, targets.check_all_fires_suppressed()  # Check if all fires are suppressed
+        # Check Target Safety
+        safety = targets.check_all_fires_suppressed()  # Check if all fires are suppressed
+
+        return used_money, safety, can_continue
 
     def update_state(self) -> int:
         """ Update Aircraft Status - Increase Water Tank Level only for not Ordered Aircrafts

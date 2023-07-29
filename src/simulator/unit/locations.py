@@ -96,19 +96,22 @@ class TargetList:
             """ Check All the fires are currently suppressed """
             return True not in [self[key].type == self._data_holder.TargetType.FIRE for key in self.keys()]
 
-        def update_target_list(self):
+        def update_target_list(self) -> bool:
             """ Update Target List at every order time
             **** PRIORITY IS NOT BEING UPDATED WITH THIS METHOD ****
+            :return bool: if false, then all possibility of suppressing file is 0 (game over)
             """
             keys = self.keys()
 
-            # Decrease Probability of Suppressing Fire
+            # Decrease Probability of Suppressing Fire - by 0/1 in a min
             fires = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.FIRE]
-            [fire.set_probability(fire.probability-randrange(0, 2)) for fire in fires]  # decrease by 5
+            results = [fire.set_probability(fire.probability-choice([0, 0, 1])) for fire in fires]
 
             # Check if fire is spreading to other targets
             possibles = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.POSSIBLE]
-            [tg.set_fire_occurred() for tg in possibles if randrange(0, 101) <= tg.threat and randrange(0, 20) == 0]
+            [tg.set_fire_occurred() for tg in possibles if randrange(0, 101) <= tg.threat and randrange(0, 80) == 0]
+
+            return 0 not in results
 
     class Location:
         """ Coordination Holder Class """
@@ -148,12 +151,13 @@ class TargetList:
         def set_suppressed(self):
             self.set_property(0, 0, 0, False, 0)
 
-        def set_probability(self, probability):
+        def set_probability(self, probability) -> int:
             if probability < 0:
                 probability = 0
             elif probability > 100:
                 probability = 100
             self._loc_dict['probability'] = probability
+            return probability
 
         def set_fire_occurred(self):
             self._loc_dict['type'] = 2
