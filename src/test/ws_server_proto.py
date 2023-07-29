@@ -77,7 +77,7 @@ async def accept(websocket):
         for i in range(0, round_num):
             target_lat = Target_list[i]['latitude']
             target_long = Target_list[i]['longitude']
-        
+
             for name in unit_dict:
                 result_time = 0
                 aircraft_name = name[0:2]
@@ -94,14 +94,15 @@ async def accept(websocket):
                 weight = (100 / aircraft_info[aircraft_name]['Possibility'])**2
                 
                 weighted_cost[name] = int(((aircraft_info[aircraft_name]['Cost']*weight/90.0)**1.16 + 10*math.log10((result_time*weight+2)**2)) * 100)
-            
+
             sorted_cost = sorted(weighted_cost.items(), key=lambda x: x[1], reverse=False)
-                
+
             result_aircraft.append(sorted_cost)
         return result_aircraft      
     
 
-    xml = f'''<operations>
+    xml =\
+f'''<operations>
     <order>
         <time>0601</time>
         <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][0][0]]['Base']}</base>
@@ -130,13 +131,12 @@ async def accept(websocket):
     print(units)
 
 
-    xml_skip = '''<operations>
-            </operations>'''
+    xml_skip = '''<operations></operations>'''
     aircraft_number = 2
     while(True):
         check = 0
         trigger = 0
-        time.sleep(1)
+        time.sleep(0.25)
         await send(f"/order/{xml_skip}".encode())
 
         order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -152,7 +152,7 @@ async def accept(websocket):
             Target_dict
         except:
             break
-        
+
         Target_list_temp=[]
         random_target = []
         
@@ -176,18 +176,19 @@ async def accept(websocket):
             units = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
             units
             
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
+            xml =\
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
             
-            time.sleep(1)
+            time.sleep(0.25)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -255,48 +256,48 @@ async def accept(websocket):
 
     units = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
     
-    xml = f'''<operations>
-        <order>
-            <time>0601</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][0][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][0][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0602</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][1][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][1][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0603</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][2][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][2][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0604</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][3][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][3][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-    </operations>'''    
-    time.sleep(1)
+    xml =\
+f'''<operations>
+    <order>
+        <time>0601</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][0][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][0][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0602</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][1][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][1][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0603</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][2][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][2][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0604</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][3][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][3][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+</operations>'''
+    time.sleep(0.25)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
     print(order_result)
 
-    xml_skip = '''<operations>
-                </operations>'''
+    xml_skip = '''<operations></operations>'''
 
     await send("/data/unit_table".encode())
 
@@ -305,7 +306,7 @@ async def accept(websocket):
     aircraft_number = 4
     iter_num_list = []
     while True:
-        time.sleep(1)
+        time.sleep(0.25)
         check = 0
         trigger = 0
         await send(f"/order/{xml_skip}".encode())
@@ -323,7 +324,7 @@ async def accept(websocket):
             Target_dict
         except:
             break
-        
+
         Target_list_temp=[]
         random_target = []
         for i in range(1,10):
@@ -346,17 +347,18 @@ async def accept(websocket):
             units = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
             units
             
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
-            time.sleep(1)
+            xml =\
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
+            time.sleep(0.25)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -413,63 +415,63 @@ async def accept(websocket):
         base_lat[i] = Target_dict['Bases'][i]['latitude']
         base_long[i] = Target_dict['Bases'][i]['longitude'] 
 
-    xml = f'''<operations>
-        <order>
-            <time>0601</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][0][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][0][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0602</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][1][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][1][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0603</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][2][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][2][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[2]}</course>
-        </order>
-        <order>
-            <time>0604</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][3][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][3][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0605</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][4][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][4][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][4][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0606</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][5][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][5][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][5][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[2]}</course>
-        </order>
-    </operations>'''     
-    time.sleep(1)
+    xml =\
+f'''<operations>
+    <order>
+        <time>0601</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][0][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][0][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0602</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][1][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][1][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0603</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][2][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][2][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[2]}</course>
+    </order>
+    <order>
+        <time>0604</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][3][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][3][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0605</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][4][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][4][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][4][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0606</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][5][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][5][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][5][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[2]}</course>
+    </order>
+</operations>'''
+    time.sleep(0.25)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
 
-    xml_skip = '''<operations>
-            </operations>'''        
+    xml_skip = '''<operations></operations>'''
     
     await send("/data/unit_table".encode())
 
@@ -477,7 +479,7 @@ async def accept(websocket):
 
     aircraft_number = 6
     while True:
-        time.sleep(1)
+        time.sleep(0.25)
         check = 0
         trigger = 0
         await send(f"/order/{xml_skip}".encode())
@@ -516,17 +518,18 @@ async def accept(websocket):
             units = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
             units
             
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
-            time.sleep(1)
+            xml = \
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
+            time.sleep(0.25)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -536,13 +539,13 @@ async def accept(websocket):
 
             units = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
             units
-  
+
     await send("/result".encode())
 
     msg = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
     print(msg)
 
-      
+
 async def main():
     async with websockets.serve(accept, HOST, PORT):
         print(f"starting server on ws://{HOST}:{PORT}")
