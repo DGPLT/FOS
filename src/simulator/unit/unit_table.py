@@ -33,26 +33,30 @@ class UnitTable(dict):
         return int(time[:2]) * 60 + int(time[2:])
 
     @staticmethod
-    def time_adder(t1: str, t2: int) -> str:
-        """ Add t2 (int) to t1 (str) """
-        if int(t1[2:]) + t2 < 60:
-            result = "0" + str(int(t1) + t2) if t1[0] == "0" else str(int(t1) + t2)
-        else:
-            if int(t1[1]) == 9:
-                result = "10" + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" else "20" + str(int(t1[2:]) + t2 - 60)
-            else:
-                result = "0" + str(int(t1[1])+1) + str(int(t1[2:]) + t2 - 60) if t1[0] == "0" \
-                    else str(int(t1[:2])+1) + str(int(t1[2:]) + t2 - 60)
+    def time_adder(time_str: str, minutes_to_add: int) -> str:
+        """ Add minutes_to_add (int) to time_str (str) """
+        try:
+            # Split Hour and Min
+            hours = int(time_str[:2])
+            minutes = int(time_str[2:])
 
-        ''' Disable Time Conversion
-        # 2400 to 0000
-        if int(result[:2]) >= 24:
-            return f"{int(result[:2])-24}" + result[2:]
-        '''
+            # Add minutes
+            total_minutes = hours * 60 + minutes + minutes_to_add
 
-        #TODO: Test Required
+            # Convert to 24 hours format
+            new_hours = total_minutes // 60
+            new_minutes = total_minutes % 60
 
-        return result + "0" if len(result) == 3 else result
+            ''' Disable Time Conversion
+            # 2400 to 0000
+            new_hours = new_hours % 24
+            '''
+
+            # fill zero
+            new_time_str = f"{str(new_hours).zfill(2)}{str(new_minutes).zfill(2)}"
+            return new_time_str
+        except ValueError:
+            raise ValueError("Invalid time format. Please use HHMM format (e.g., 0900).")
 
     def __init__(self, order_list: OperationOrderList, target_list: TargetList):
         self._current_time: str = "0559"
@@ -179,13 +183,15 @@ class UnitTable(dict):
 
         for aid, this in filter(lambda x: not x[1]['Available'], self.items()):
             order = order_list[aid]
+            start_time = this['ETD']
             if order.mission_type in (MissionType.DIRECT, MissionType.INDIRECT):
                 if int(self._current_time) < int(this['ETA']):
                     loc_from = bases[this['Base']]
                     loc_to = targets[order.target[0]]
-                else:
+                else:  # return
                     loc_from = targets[order.target[0]]
                     loc_to = bases[this['Base']]
+                    start_time = this['ETA']
             else:
                 if int(self._current_time) < int(this['ETA']):
                     # if current time < departure time + time to get to the lake
@@ -196,11 +202,12 @@ class UnitTable(dict):
                     else:
                         loc_from = lakes['L1']
                         loc_to = targets[order.target[0]]
-                else:
+                else:  # return
                     loc_from = targets[order.target[0]]
                     loc_to = bases[this['Base']]
+                    start_time = this['ETA']
 
-            positions[aid] = self.calculate_position(loc_from.coords, loc_to.coords, this['ETD'], get_by_aid(aid).velocity)
+            positions[aid] = self.calculate_position(loc_from.coords, loc_to.coords, start_time, get_by_aid(aid).velocity)
 
         return positions
 
