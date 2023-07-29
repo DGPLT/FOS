@@ -17,25 +17,15 @@ from enum import Enum
 
 
 class JSVisualizer(GameVisualizer):
-    _PIXEL_EXPANSION = 2
-    _MAX_CORDINATION = 300
+    _PIXEL_EXPANSION = 0.5
+    _MAX_CORDINATION = 1200
     _SCREEN_WIDTH = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_HEIGHT = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_SIZE = (_SCREEN_WIDTH, _SCREEN_HEIGHT)
 
-    @classmethod
-    def get_screen_size(cls): return cls._SCREEN_SIZE
-
-    @classmethod
-    def get_pixel_expansion(cls): return cls._PIXEL_EXPANSION
-
-    RESOURCE_PATH = "./res/"
-    BACKGROUND_IMG_SOURCE = "map/map.png"
-    FIRE_IMG_SOURCE = "Fire1.png"
+    RESOURCE_PATH = "/res/"
 
     visualize = True
-    _aircraft_variations = ("A", "B")
-    _aircraft_ids = tuple(k+"-"+i for i in _aircraft_variations for k in Aircrafts.keys())
 
     @classmethod
     async def load_image(cls, route: str):
@@ -87,9 +77,9 @@ class JSVisualizer(GameVisualizer):
 
     class AircraftModel(Enum):
         # define image size as of when the map size is 300px
-        D = (16, 0)  # (pixel_size, _dum_val)
-        H = (32, 0)
-        A = (32, 1)
+        D = (round(16*5), 0)  # (pixel_size, _dum_val)
+        H = (round(32*5), 0)
+        A = (round(32*5), 1)
 
         @classmethod
         def get_relative_size(cls, _id) -> int:
@@ -132,7 +122,6 @@ class JSVisualizer(GameVisualizer):
             def _get_row_obj(self, _id: str) -> js.HTMLTableRowElement:
                 if _id not in self.ids:
                     raise KeyError(f"Table Row id={_id} is not exists.")
-                print(_id, type(_id))
                 return js.document.getElementById(_id)
 
             def append(self, _id: str, row_data: list | tuple):
@@ -162,13 +151,13 @@ class JSVisualizer(GameVisualizer):
 
             self._pixel_expansion = JSVisualizer.get_pixel_expansion()
             self.screen_size = JSVisualizer.get_screen_size()
-            self.fire_border_size = round(40 * self._pixel_expansion)
-            self.fire_size = round(74 * self._pixel_expansion)
+            self.fire_border_size = round(40 * 4 * self._pixel_expansion)
+            self.fire_size = round(74 * 4 * self._pixel_expansion)
             self.get_relative_airc_size = JSVisualizer.AircraftModel.get_relative_size
 
             self.api_log = js.HTMLElement = getElementById(api_log_id)
             self.api_log_id = api_log_id
-            formatting = "%(asctime)s [%(levelname)s] %(message)s"
+            formatting = "[%(levelname)s] %(message)s"
             logging.basicConfig(handlers=[CustomLogHandler(self.api_log)], level=logging.INFO, format=formatting)
 
             self.canvas_id = canvas_id
@@ -233,8 +222,8 @@ class JSVisualizer(GameVisualizer):
             self.positions = positions
 
         def update_unit_table(self, unit_table):
-            packager = lambda k, o: (str(o['Ordered']), k, str(o['Available']), o['ETR'],
-                                     o['ETD'], o['ETA'], o['Base'], str(o['Current Water']))
+            packager = lambda k, o: (str(o['Ordered']), str(o['Available']), o['ETR'],
+                                     o['ETD'], o['ETA'], o['Base'], k, str(o['Current Water']))
             unit = self.unit_table_obj
             [unit.update(key, packager(key, val)) for key, val in unit_table.items()]
 
@@ -242,10 +231,12 @@ class JSVisualizer(GameVisualizer):
             js.bootstrap.Modal.getOrCreateInstance(self.score_modal).show()
 
         def append_current_round_score(self, round_num: int, is_win: bool, score: int):
-            self.score_panel.innerHTML += f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} Score: {score}<br><br>"
+            self.score_panel.innerHTML \
+                += f"[{'WIN' if is_win else 'LOSE'}] Round {round_num} Score: {score if is_win else 'None'}<br><br>"
 
         def append_order_log(self, order_xml: str, current_time: str):  # Cannot be Static
-            logging.info("order_" + current_time + " " + order_xml)
+            if order_xml.replace("\n", "").replace(" ", "") != "<operations></operations>":
+                logging.info("order_" + current_time + " <XMP>" + order_xml + "</XMP>")
 
         def draw_background(self):
             self.canvas.drawImage(self.background, 0, 0, *self.screen_size)  # type: ignore
@@ -272,7 +263,6 @@ class JSVisualizer(GameVisualizer):
             expansion = self._pixel_expansion
             shift = round(self.fire_size / 2)
             border_shift = round(self.fire_border_size / 2)
-            print(self.fire_size, self.fire_border_size, shift, border_shift)
             for t in self.targets.keys():
                 target = self.targets[t]
                 t_type = target.type
@@ -371,10 +361,10 @@ class CustomLogHandler(logging.Handler):
         elif log_level == "ERROR":
             color = "darkred"  # dark red
 
-        self.output_element.appendChild(js.document.createElement("span"))
-        self.output_element.lastChild.innerHTML = text  # type: ignore
-        self.output_element.lastChild.style.color = color  # type: ignore
-        self.output_element.appendChild(js.document.createElement("br"))  # type: ignore
+        self.output_element.prepend(js.document.createElement("br"))  # type: ignore
+        self.output_element.prepend(js.document.createElement("span"))
+        self.output_element.firstChild.innerHTML = text  # type: ignore
+        self.output_element.firstChild.style.color = color  # type: ignore
 
     def flush(self):
         pass

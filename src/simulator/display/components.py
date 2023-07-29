@@ -8,6 +8,8 @@ import sys
 import json
 from datetime import datetime
 
+from src.simulator.unit.aircraft import Aircrafts
+
 
 class GameVisualizer(object):
     """ Game Visualizer Interface """
@@ -17,8 +19,21 @@ class GameVisualizer(object):
     _SCREEN_HEIGHT = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_SIZE = (_SCREEN_WIDTH, _SCREEN_HEIGHT)
 
+    @classmethod
+    def get_screen_size(cls): return cls._SCREEN_SIZE
+
+    @classmethod
+    def get_pixel_expansion(cls): return cls._PIXEL_EXPANSION
+
+    RESOURCE_PATH = "./res/"
+    BACKGROUND_IMG_SOURCE = "map/map.png"
+    FIRE_IMG_SOURCE = "Fire1.png"
+
     is_pyodide: bool = sys.platform == "emscripten" or "pyodide" in sys.modules
     visualize = False
+
+    _aircraft_variations = ("A", "B")
+    _aircraft_ids = tuple(k+"-"+i for i in _aircraft_variations for k in Aircrafts.keys())
 
     def __init__(self, logging: bool = True):
         self.logging: bool = logging
