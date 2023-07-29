@@ -50,7 +50,7 @@ spec_sheet = {
         "ETRDY": 15,
         "Cost": 1000,
         "Cover Area": 1,
-        "Water Tank": 15.625,
+        "Water Tank": 25.625,
         "Possibility": 61
     },
     "H2": {
@@ -59,7 +59,7 @@ spec_sheet = {
         "ETRDY": 14,
         "Cost": 950,
         "Cover Area": 1,
-        "Water Tank": 14.7,
+        "Water Tank": 24.7,
         "Possibility": 62
     },
     "H3": {
@@ -68,7 +68,7 @@ spec_sheet = {
         "ETRDY": 16,
         "Cost": 1100,
         "Cover Area": 1,
-        "Water Tank": 16.129,
+        "Water Tank": 26.129,
         "Possibility": 63
     },
     "H4": {
@@ -77,7 +77,7 @@ spec_sheet = {
         "ETRDY": 14,
         "Cost": 900,
         "Cover Area": 1,
-        "Water Tank": 14.7,
+        "Water Tank": 24.7,
         "Possibility": 60
     },
     "H5": {
@@ -86,7 +86,7 @@ spec_sheet = {
         "ETRDY": 15,
         "Cost": 1050,
         "Cover Area": 1,
-        "Water Tank": 15.625,
+        "Water Tank": 25.625,
         "Possibility": 62
     },
     "A1": {
@@ -95,7 +95,7 @@ spec_sheet = {
         "ETRDY": 40,
         "Cost": 4000,
         "Cover Area": 2,
-        "Water Tank": 25,
+        "Water Tank": 55,
         "Possibility": 90
     },
     "A2": {
@@ -104,7 +104,7 @@ spec_sheet = {
         "ETRDY": 37,
         "Cost": 3500,
         "Cover Area": 2,
-        "Water Tank": 27.777,
+        "Water Tank": 57.777,
         "Possibility": 85
     },
     "A3": {
@@ -113,7 +113,7 @@ spec_sheet = {
         "ETRDY": 41,
         "Cost": 5200,
         "Cover Area": 2,
-        "Water Tank": 29.4117,
+        "Water Tank": 69.4117,
         "Possibility": 99
     },
     "A4": {
@@ -122,7 +122,7 @@ spec_sheet = {
         "ETRDY": 55,
         "Cost": 3200,
         "Cover Area": 2,
-        "Water Tank": 27.777,
+        "Water Tank": 57.777,
         "Possibility": 83
     },
     "A5": {
@@ -131,7 +131,7 @@ spec_sheet = {
         "ETRDY": 55,
         "Cost": 4500,
         "Cover Area": 2,
-        "Water Tank": 31.25,
+        "Water Tank": 41.25,
         "Possibility": 85
     }
 }
