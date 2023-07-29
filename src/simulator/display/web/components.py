@@ -224,7 +224,7 @@ class JSVisualizer(GameVisualizer):
             [spec.update(_id, packager(_id, get(_id))) for _id in spec_sheet.keys()]
 
         def update_target_table(self, target_list):
-            packager = lambda k, o: (str(o.is_targeted), k, str(o.priority) if o.priority == 0 else "",
+            packager = lambda k, o: (str(o.is_targeted), k, str(o.priority) if o.priority != 0 else "",
                                      str(o.lat), str(o.long), o.type.name, str(o.threat), str(o.probability))
             targets = target_list.targets
             target = self.target_table_obj
