@@ -3,16 +3,24 @@
   <head>
     <title>FOS</title>
     <meta charset="utf-8">
-    <link rel="shortcut icon" href="./res/icon.ico">
+    <link rel="shortcut icon" href="/res/icon.ico">
     <script src="/cdn/pyodide/v0.23.4/full/pyodide.js"></script>
-    <link href="/cdn/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    <link href="/cdn/bootstrap/5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <script src="/cdn/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    <script src="/cdn/bootstrap/5.3.0/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
             crossorigin="anonymous"></script>
 
     <script src="/cdn/webrtc/adapter/adapter-latest.js"></script>
     <script src="/cdn/localSocket/localSocket.js"></script>
+    <style>
+      #log-container { overflow: auto; height: 300px; }
+      .log-warn { color: orange }
+      .log-error { color: red }
+      .log-info { color: skyblue }
+      .log-log { color: grey }
+      .log-warn, .log-error { font-weight: bold; }
+    </style>
   </head>
   <body>
     <nav class="navbar">
@@ -57,7 +65,7 @@
             </div>
           </div>
           <a href="https://github.com/usfk-code-challenge-2023/FOS">
-            <img class="m-2" src="./res/github.svg" width="30" alt="Github" sizes="">
+            <img class="m-2" src="/res/github.svg" width="30" alt="Github" sizes="">
           </a>
           <div class="btn-group m-2">
             <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#scorePanelModal">
@@ -151,8 +159,55 @@
         </thead>
       </table>
       <br>
+      <div id="log-container"><pre id="log"></pre></div>
+      <br>
     </div>
     <script>
+      rewireLoggingToElement(
+        () => document.getElementById("log"),
+        () => document.getElementById("log-container"), true);
+
+        function rewireLoggingToElement(eleLocator, eleOverflowLocator, autoScroll) {
+          fixLoggingFunc('log');
+          fixLoggingFunc('debug');
+          fixLoggingFunc('warn');
+          fixLoggingFunc('error');
+          fixLoggingFunc('info');
+
+          function fixLoggingFunc(name) {
+            console['old' + name] = console[name];
+            console[name] = function(...arguments) {
+              const output = produceOutput(name, arguments);
+              const eleLog = eleLocator();
+
+              if (autoScroll) {
+                const eleContainerLog = eleOverflowLocator();
+                const isScrolledToBottom = eleContainerLog.scrollHeight - eleContainerLog.clientHeight <= eleContainerLog.scrollTop + 1;
+                eleLog.innerHTML += output + "<br>";
+                if (isScrolledToBottom) {
+                  eleContainerLog.scrollTop = eleContainerLog.scrollHeight - eleContainerLog.clientHeight;
+                }
+              } else {
+                eleLog.innerHTML += output + "<br>";
+              }
+
+              console['old' + name].apply(undefined, arguments);
+            };
+          }
+
+          function produceOutput(name, args) {
+            return args.reduce((output, arg) => {
+              return output +
+                "<span class=\"log-" + (typeof arg) + " log-" + name + "\">" +
+                  (typeof arg === "object" && (JSON || {}).stringify ? JSON.stringify(arg) : arg) +
+                  "</span>&nbsp;";
+              }, '');
+            }
+          }
+
+
+
+
       var pc = new RTCPeerConnection();
       var rtcDataChannel;
       var rtcBuffer = "";
@@ -194,6 +249,8 @@
         await pyodide.loadPackage("micropip")
 		const micropip = pyodide.pyimport("micropip");
 		try {
+		  await micropip.install("/cdn/packages/xmltodict-0.13.0-py2.py3-none-any.whl");
+		  await micropip.install("/cdn/packages/wasmsockets-0.1.4-py3-none-any.whl");
 		  await micropip.install("/dist/fos_simulator-1.0.0.0-py3-none-any.whl");
         } catch (error) {
           console.error(error);
@@ -207,9 +264,11 @@
         await pyodide.globals.get("init")();
         await pyodide.globals.get("main")();
         document.getElementById("startButton").addEventListener("click", () => {
+          console.log("Start Button Pressed......")
           pyodide.globals.get("start")();
         });
         document.getElementById("stopButton").addEventListener("click", () => {
+          console.log("Stop Button Pressed......")
           pyodide.globals.get("pause")();
         });
         document.getElementById("downloadButton").addEventListener("click", () => {

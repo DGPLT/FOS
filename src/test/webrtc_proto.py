@@ -1,6 +1,5 @@
 import asyncio
 import json
-import js
 import time
 import pandas as pd
 
@@ -10,6 +9,9 @@ class WebConnectionBuilder:
 
     def __init__(self):
         super().__init__()
+        import js as _js
+        global js
+        js = _js
 
     async def connect(self):
         print("trying to connect with webRTC...")
@@ -18,12 +20,14 @@ class WebConnectionBuilder:
             await asyncio.sleep(0)
         print("webRTC channel connected!")
 
-    def send(self, msg):
-        if type(msg) == str:
-            msg = msg.encode(self.ENCODING)
+    async def send(self, msg):
+        if type(msg) == bytes:
+            msg = msg.decode(self.ENCODING)
         js.rtcDataChannel.send(msg)
 
-    def recv(self):
+    async def recv(self):
+        while not js.rtcBuffer:
+            await asyncio.sleep(0)
         msg = js.rtcBuffer
         js.rtcBuffFlush()
         if type(msg) == str:
@@ -32,6 +36,7 @@ class WebConnectionBuilder:
             msg = msg.decode(self.ENCODING)
         else:  # pyodide.ffi.JsProxy -> memoryview -> str
             msg = str(msg.to_py(), self.ENCODING)
+        print("RTC RECEIVED:", msg)
         return msg
 
 
@@ -40,32 +45,38 @@ async def main():
     
     # client accept
     print("receiving client")
-    msg = rtc.recv()
-    print(msg)
+    while not js.rtcConnected:
+        await asyncio.sleep(0)
+
+    while True:
+        msg = await rtc.recv()
+        if msg == "!CONNECTED!":
+            break
+        await asyncio.sleep(0)
 
     # start
     print("/start")
-    rtc.send("/start".encode())
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send("/start")
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
 
 
     # data get
     print("/data/aircraft_specsheet")
-    rtc.send("/data/aircraft_specsheet".encode())
-    spec = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send("/data/aircraft_specsheet")
+    spec = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(spec)
     print(pd.DataFrame.from_dict(data=json.loads(spec[0]['data']), orient='index'))
 
     print("/data/target_list")
-    rtc.send("/data/target_list".encode())
-    targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send("/data/target_list")
+    targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(targets)
     print(pd.DataFrame.from_dict(data=json.loads(targets[0]['data']), orient='columns'))
 
     print("/data/unit_table")
-    rtc.send("/data/unit_table".encode())
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send("/data/unit_table")
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(units)
     print(pd.DataFrame.from_dict(data=json.loads(units[0]['data']), orient='index'))
 
@@ -87,7 +98,7 @@ async def main():
     lake_long = Lake_info['longitude']
 
     base_list = ['A', 'B', 'C']
-    base_lat ={}
+    base_lat = {}
     base_long = {}
     unit_dict = json.loads(units[0]['data'])
     aircraft_info = json.loads(spec[0]['data'])
@@ -144,14 +155,14 @@ async def main():
         <course>{random_target}</course>
     </order>
 </operations>'''
-    time.sleep(1)
+    time.sleep(0.25)
     print("/order")
-    rtc.send(f"/order/{xml}".encode())
-    order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send(f"/order/{xml}")
+    order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(order_result)
 
-    rtc.send(f"/data/unit_table".encode())
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    await rtc.send(f"/data/unit_table")
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(units)
 
 
@@ -161,15 +172,15 @@ async def main():
     while(True):
         check = 0
         trigger = 0
-        time.sleep(1)
-        rtc.send(f"/order/{xml_skip}".encode())
+        time.sleep(0.25)
+        await rtc.send(f"/order/{xml_skip}")
 
-        order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         order_result
 
-        rtc.send("/data/target_list".encode())
+        await rtc.send("/data/target_list")
 
-        targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         targets
 
         try:
@@ -196,58 +207,59 @@ async def main():
         if(check == 9):
             break
         if trigger == 1:
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
-            time.sleep(1)
-            rtc.send(f"/order/{xml}".encode())
+            xml = \
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
+            time.sleep(0.25)
+            await rtc.send(f"/order/{xml}")
 
-            order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             order_result
 
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-    rtc.send("/result".encode())
+    await rtc.send("/result")
 
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
     time.sleep(2)
 
-    rtc.send("/start".encode())
+    await rtc.send("/start")
 
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(units)
 
-    rtc.send("/data/target_list".encode())
+    await rtc.send("/data/target_list")
 
-    targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(targets)
 
     Target_list = pd.DataFrame.from_dict(data=json.loads(targets[0]['data']), orient='columns')
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(units)
 
     Target_dict = json.loads(targets[0]['data'])
@@ -275,72 +287,73 @@ async def main():
         base_lat[i] = Target_dict['Bases'][i]['latitude']
         base_long[i] = Target_dict['Bases'][i]['longitude']
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
-    xml = f'''<operations>
-        <order>
-            <time>0601</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][0][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][0][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0602</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][1][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][1][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0603</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][2][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][2][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0604</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][3][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,2)[0][3][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-    </operations>'''
+    xml = \
+f'''<operations>
+    <order>
+        <time>0601</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][0][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][0][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0602</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][1][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][1][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0603</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][2][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][2][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0604</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,2)[0][3][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,2)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,2)[0][3][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+</operations>'''
 
-    time.sleep(1)
-    rtc.send(f"/order/{xml}".encode())
+    time.sleep(0.25)
+    await rtc.send(f"/order/{xml}")
 
-    order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(order_result)
 
     xml_skip = '''<operations>
                 </operations>'''
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
     aircraft_number = 4
     iter_num_list = []
     while True:
-        time.sleep(1)
+        time.sleep(0.25)
         check = 0
         trigger = 0
-        rtc.send(f"/order/{xml_skip}".encode())
+        await rtc.send(f"/order/{xml_skip}")
 
-        order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         order_result
 
-        rtc.send("/data/target_list".encode())
+        await rtc.send("/data/target_list")
 
-        targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         targets
 
         try:
@@ -366,51 +379,52 @@ async def main():
         if(check == 9):
             break
         if trigger == 1:
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
+            xml = \
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
             
-            time.sleep(1)
-            rtc.send(f"/order/{xml}".encode())
+            time.sleep(0.25)
+            await rtc.send(f"/order/{xml}")
 
-            order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             order_result
 
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-    rtc.send("/result".encode())
+    await rtc.send("/result")
 
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
     time.sleep(2)
 
-    rtc.send("/start".encode())
+    await rtc.send("/start")
 
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
-    rtc.send("/data/target_list".encode())
+    await rtc.send("/data/target_list")
 
-    targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
     Target_list = pd.DataFrame.from_dict(data=json.loads(targets[0]['data']), orient='columns')
 
@@ -439,82 +453,83 @@ async def main():
         base_lat[i] = Target_dict['Bases'][i]['latitude']
         base_long[i] = Target_dict['Bases'][i]['longitude']
 
-    xml = f'''<operations>
-        <order>
-            <time>0601</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][0][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][0][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0602</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][1][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][1][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0603</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][2][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][2][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[2]}</course>
-        </order>
-        <order>
-            <time>0604</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][3][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][3][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[0]}</course>
-        </order>
-        <order>
-            <time>0605</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][4][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][4][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][4][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[1]}</course>
-        </order>
-        <order>
-            <time>0606</time>
-            <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][5][0]]['Base']}</base>
-            <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][5][0][0:2]]['Aircraft Type']}</aircraft_type>
-            <track_number>{select_aircraft(Target_list_temp,3)[0][5][0]}</track_number>
-            <mission_type>1</mission_type>
-            <course>{random_target[2]}</course>
-        </order>
-    </operations>'''
+    xml = \
+f'''<operations>
+    <order>
+        <time>0601</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][0][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][0][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][0][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0602</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][1][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][1][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][1][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0603</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][2][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][2][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][2][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[2]}</course>
+    </order>
+    <order>
+        <time>0604</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][3][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][3][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][3][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+    <order>
+        <time>0605</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][4][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][4][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][4][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[1]}</course>
+    </order>
+    <order>
+        <time>0606</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,3)[0][5][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,3)[0][5][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,3)[0][5][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[2]}</course>
+    </order>
+</operations>'''
     
-    time.sleep(1)
-    rtc.send(f"/order/{xml}".encode())
+    time.sleep(0.25)
+    await rtc.send(f"/order/{xml}")
 
-    order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
     xml_skip = '''<operations>
             </operations>'''
 
-    rtc.send("/data/unit_table".encode())
+    await rtc.send("/data/unit_table")
 
-    units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
 
     aircraft_number = 6
     while True:
-        time.sleep(1)
+        time.sleep(0.25)
         check = 0
         trigger = 0
-        rtc.send(f"/order/{xml_skip}".encode())
+        await rtc.send(f"/order/{xml_skip}")
 
-        order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         order_result
 
-        rtc.send("/data/target_list".encode())
+        await rtc.send("/data/target_list")
 
-        targets = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+        targets = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
         targets
         try:
             Target_dict = json.loads(targets[0]['data'])
@@ -538,36 +553,37 @@ async def main():
         if(check == 9):
             break
         if trigger == 1:
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-            xml = f'''<operations>
-            <order>
-                <time>{"0"+str(int(units[0]['time'])+1)}</time>
-                <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
-                <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
-                <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
-                <mission_type>1</mission_type>
-                <course>{random_target[0]}</course>
-            </order>
-            </operations>'''
+            xml = \
+f'''<operations>
+    <order>
+        <time>{"0"+str(int(units[0]['time'])+1)}</time>
+        <base>{unit_dict[select_aircraft(Target_list_temp,1)[0][aircraft_number][0]]['Base']}</base>
+        <aircraft_type>{aircraft_info[select_aircraft(Target_list_temp,1)[0][aircraft_number][0][0:2]]['Aircraft Type']}</aircraft_type>
+        <track_number>{select_aircraft(Target_list_temp,1)[0][aircraft_number][0]}</track_number>
+        <mission_type>1</mission_type>
+        <course>{random_target[0]}</course>
+    </order>
+</operations>'''
 
-            time.sleep(1)
-            rtc.send(f"/order/{xml}".encode())
+            time.sleep(0.25)
+            await rtc.send(f"/order/{xml}")
 
-            order_result = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            order_result = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             order_result
 
-            rtc.send("/data/unit_table".encode())
+            await rtc.send("/data/unit_table")
 
-            units = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+            units = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
             units
 
-    rtc.send("/result".encode())
+    await rtc.send("/result")
 
-    msg = pd.DataFrame.from_dict(data=json.loads(rtc.recv()), orient='index')
+    msg = pd.DataFrame.from_dict(data=json.loads(await rtc.recv()), orient='index')
     print(msg)
 
 main()

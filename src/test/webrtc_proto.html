@@ -1,71 +1,121 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title>Controller</title>
+        <link rel="shortcut icon" href="/res/icon1.ico">
+        <script src="/cdn/pyodide/v0.23.4/full/pyodide.js"></script>
+        <script src="/cdn/webrtc/adapter/adapter-latest.js"></script>
+        <script src="/cdn/localSocket/localSocket.js"></script>
+        <style>
+            #log-container { overflow: auto; height: 900px; }
+            .log-warn { color: orange }
+            .log-error { color: red }
+            .log-info { color: skyblue }
+            .log-log { color: black }
+            .log-warn, .log-error { font-weight: bold; }
+        </style>
+        <script>
+            rewireLoggingToElement(
+                () => document.getElementById("log"),
+                () => document.getElementById("log-container"), true);
 
-<head>
-    <title>Test</title>
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="https://dooplns.github.io/localSocket/localSocket.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-    <script>
-        var pc = new RTCPeerConnection();
-        var rtcDataChannel;
-        var rtcBuffer = "";
-        var rtcBuffFlush = () => {
-            rtcBuffer = ""
-        };
-        rtcConnect = () => init(rtcDataChannel = pc.createDataChannel("chat"));
-        var rtcConnected = false
+            function rewireLoggingToElement(eleLocator, eleOverflowLocator, autoScroll) {
+                fixLoggingFunc('log');
+                fixLoggingFunc('debug');
+                fixLoggingFunc('warn');
+                fixLoggingFunc('error');
+                fixLoggingFunc('info');
 
-        pc.ondatachannel = e => init(rtcDataChannel = e.channel);
-        var init = rtcDataChannel => {
-            rtcDataChannel.onopen = e => {
-                rtcConnected = true;
-                document.getElementById("con_status_btn").innerText = "Connected..."
+                function fixLoggingFunc(name) {
+                    console['old' + name] = console[name];
+                    console[name] = function(...arguments) {
+                        const output = produceOutput(name, arguments);
+                        const eleLog = eleLocator();
+
+                        if (autoScroll) {
+                            const eleContainerLog = eleOverflowLocator();
+                            const isScrolledToBottom = eleContainerLog.scrollHeight - eleContainerLog.clientHeight <= eleContainerLog.scrollTop + 1;
+                            eleLog.innerHTML += output + "<br>";
+                            if (isScrolledToBottom) {
+                                eleContainerLog.scrollTop = eleContainerLog.scrollHeight - eleContainerLog.clientHeight;
+                            }
+                        } else {
+                            eleLog.innerHTML += output + "<br>";
+                        }
+
+                        console['old' + name].apply(undefined, arguments);
+                    };
+                }
+
+                function produceOutput(name, args) {
+                    return args.reduce((output, arg) => {
+                        return output +
+                            "<span class=\"log-" + (typeof arg) + " log-" + name + "\">" +
+                                (typeof arg === "object" && (JSON || {}).stringify ? JSON.stringify(arg) : arg) +
+                            "</span>&nbsp;";
+                    }, '');
+                }
             }
-            rtcDataChannel.onclose = e => {
-                console.log("Bye!");
-                rtcConnected = false;
-                document.getElementById("con_status_btn").innerText = "Connect"
-            }
-            rtcDataChannel.onmessage = e => {
-                rtcBuffer = e.data;
+
+
+            var pc = new RTCPeerConnection();
+            var rtcDataChannel;
+            var rtcBuffer = "";
+            var rtcBuffFlush = () => {
+                rtcBuffer = ""
             };
-        };
-        pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
-        pc.onicecandidate = e => send({ candidate: e.candidate });
-        pc.onnegotiationneeded = e => pc.createOffer()
-            .then(offer => pc.setLocalDescription(offer))
-            .then(() => send({ sdp: pc.localDescription }))
-            .catch(console.log);
-        var sc = new localSocket(), send = obj => sc.send(JSON.stringify(obj));
-        var incoming = msg => msg.sdp &&
-            pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
-                .then(() => pc.signalingState == "stable" || pc.createAnswer()
-                    .then(answer => pc.setLocalDescription(answer))
-                    .then(() => send({ sdp: pc.localDescription })))
-                .catch(console.log) || msg.candidate &&
-            pc.addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(console.log);
-        sc.onmessage = e => incoming(JSON.parse(e.data));
+            var rtcConnect = () => init(rtcDataChannel = pc.createDataChannel("chat"));
+            var rtcConnected = false
 
-        async function main() {
-            pyodide = await loadPyodide();
-            await pyodide.loadPackage("pandas")
-            pyodide.runPython(`
-                from js import prompt
-                __builtins__.input = prompt
-            `);
-            let code = await fetch("webrtc_proto.py").then(response => response.text());
-            pyodide.runPython(code);
-        }
-        main();
-    </script>
-</head>
+            pc.ondatachannel = e => init(rtcDataChannel = e.channel);
+            var init = rtcDataChannel => {
+                rtcDataChannel.onopen = e => {
+                    rtcConnected = true;
+                    document.getElementById("con_status_btn").innerText = "Connected!"
+                }
+                rtcDataChannel.onclose = e => {
+                    console.log("Bye!");
+                    rtcConnected = false;
+                    document.getElementById("con_status_btn").innerText = "Connection Crashed !@#$%^"
+                }
+                rtcDataChannel.onmessage = e => {
+                    rtcBuffer = e.data;
+                };
+            };
+            pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
+            pc.onicecandidate = e => send({ candidate: e.candidate });
+            pc.onnegotiationneeded = e => pc.createOffer()
+                .then(offer => pc.setLocalDescription(offer))
+                .then(() => send({ sdp: pc.localDescription }))
+                .catch(console.log);
+            var sc = new localSocket(), send = obj => sc.send(JSON.stringify(obj));
+            var incoming = msg => msg.sdp &&
+                pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
+                    .then(() => pc.signalingState == "stable" || pc.createAnswer()
+                        .then(answer => pc.setLocalDescription(answer))
+                        .then(() => send({ sdp: pc.localDescription })))
+                    .catch(console.log) || msg.candidate &&
+                pc.addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(console.log);
+            sc.onmessage = e => incoming(JSON.parse(e.data));
 
-<body>
-    <h1>Test</h1>
-    <button id="con_status_btn" onclick="rtcConnect()">Connect</button>
-    <p>Test</p>
-    <button>Send!!!!!!</button>
-</body>
-
+            async function main() {
+                let code = await fetch('webrtc_proto.py').then(response => response.text());
+                pyodide = await loadPyodide();
+                await pyodide.loadPackage("pandas")
+                pyodide.runPython(`
+                    from js import prompt
+                    __builtins__.input = prompt
+                `);
+                pyodide.runPython(code);
+            }
+            main();
+        </script>
+    </head>
+    <body>
+        <h1>FOS Controller Prototype</h1>
+        <button id="con_status_btn" onclick="rtcConnect()">Connecting...</button>
+        <br>
+        <div id="log-container"><pre id="log"></pre></div>
+        <br>
+    </body>
 </html>
