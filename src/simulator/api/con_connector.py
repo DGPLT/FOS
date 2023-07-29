@@ -74,11 +74,12 @@ class WebConnectionBuilder(ConnectionBuilder):
             await self._ws.connect()
 
     async def send(self, msg):
-        msg = msg.encode(self.ENCODING)
         if self.is_rtc:
+            if type(msg) == bytes:
+                msg = msg.decode(self.ENCODING)
             js.rtcDataChannel.send(msg)
         else:
-            await self._ws.send(msg)
+            await self._ws.send(msg.encode(self.ENCODING))
 
     async def recv(self):
         if self.is_rtc:
