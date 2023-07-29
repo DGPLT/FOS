@@ -93,7 +93,7 @@ class ApiResolver:
                 await self.disconnect()
             case _:
                 await self._controller.send(json.dumps({'code': 404, 'message': "Not Found"}))
-                return request, "", lambda **kwargs: None
+                return request, "", self._not_a_proper_request
 
     async def _send_game_start_signal(self, **kwargs):
         """ Send a game start signal
@@ -162,3 +162,6 @@ class ApiResolver:
         else:
             await self._controller.send(json.dumps(
                 {'code': 200, 'message': f"Round {kwargs['round']} is finished.", 'data': kwargs}))
+
+    async def _not_a_proper_request(self, **kwargs):
+        pass
