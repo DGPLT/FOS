@@ -66,12 +66,13 @@ class TargetList:
                 occurred = sample(area, round_num)
                 target_type = {key: 2 if key in occurred else 1 if key in area else 0 for key in keys}
                 target_threats = {key: 100 if key in occurred else randrange(1, 100) if key in area else 0 for key in keys}
-                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_priorities = {data[0]: i+1 if data[0] in occurred or data[0] in area else 0
+                                     for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
             else:
                 selected = sample(keys, round_num)
                 target_type = {key: 2 if key in selected else 1 for key in keys}
                 target_threats = {key: 100 if key in selected else randrange(1, 100) for key in keys}
-                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_priorities = {data[0]: i+1 for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
 
             [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
 
