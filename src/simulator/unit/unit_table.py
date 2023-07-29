@@ -256,6 +256,6 @@ class UnitTable(dict):
                 'ETD': "",
                 'ETA': "",
                 'Base': choice(self._base_list),
-                'Current Water': randrange(0, 101)
+                'Current Water': randrange(0, 60)
             } for key in self.get_aircraft_ids()
         }

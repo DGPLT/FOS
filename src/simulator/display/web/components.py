@@ -235,7 +235,7 @@ class JSVisualizer(GameVisualizer):
 
         def update_unit_table(self, unit_table):
             packager = lambda k, o: (str(o['Ordered']), str(o['Available']), o['ETR'],
-                                     o['ETD'], o['ETA'], o['Base'], k, str(o['Current Water']))
+                                     o['ETD'], o['ETA'], o['Base'], k, str(round(o['Current Water'], 3)))
             unit = self.unit_table_obj
             [unit.update(key, packager(key, val)) for key, val in unit_table.items()]
 
