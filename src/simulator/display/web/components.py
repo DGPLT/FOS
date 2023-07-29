@@ -11,8 +11,10 @@ from src.simulator.unit.aircraft import Aircrafts
 
 import js
 import re
+import json
 import asyncio
 import logging
+import pkg_resources
 from enum import Enum
 
 
@@ -146,7 +148,7 @@ class JSVisualizer(GameVisualizer):
         def __init__(self, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
                      spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
                      score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
-                     api_log_id: str = "output"):
+                     api_log_id: str = "output", fos_version_info: str = "fos_version_info"):
             getElementById = js.document.getElementById
 
             self._pixel_expansion = JSVisualizer.get_pixel_expansion()
@@ -181,6 +183,16 @@ class JSVisualizer(GameVisualizer):
             self.game_state = js.HTMLElement = getElementById(game_state_id)  # type: ignore
             self.game_state_id = game_state_id
             self.set_game_state("Initializing...")
+
+            self.fos_version_inf = js.HTMLElement = getElementById(fos_version_info)  # type: ignore
+            self.fos_version_inf_id = fos_version_info
+            try:
+                fos_ver = pkg_resources.get_distribution("fos_simulator").version
+            except pkg_resources.DistributionNotFound:
+                with open("./config/info.json") as f_info:
+                    info = json.load(f_info)
+                    fos_ver = info['version']
+            self.fos_version_inf.innerHTML = "v" + fos_ver
 
             self.game_time = js.HTMLElement = getElementById(game_time_id)
             self.game_time_id = game_time_id
@@ -283,12 +295,12 @@ class JSVisualizer(GameVisualizer):
     def __init__(self, logging: bool = True, canvas_id: str = "gameview", unit_table_id: str = "unit", target_table_id: str = "target",
                  spec_sheet_id: str = "specsheet", game_state_id: str = "gamestate", game_time_id: str = "gametime",
                  score_modal_id: str = "scorePanelModal", score_panel_id: str = "score-panel-text",
-                 api_log_id: str = "output"):
+                 api_log_id: str = "output", fos_version_info: str = "fos_version_info"):
         super().__init__(logging)
         self._elements = self.JSElements(canvas_id, unit_table_id, target_table_id,
                                          spec_sheet_id, game_state_id, game_time_id,
                                          score_modal_id, score_panel_id,
-                                         api_log_id)
+                                         api_log_id, fos_version_info)
 
         self._game_state = self.GameState.UNKNOWN
         self._round = 0
