@@ -308,6 +308,7 @@ class JSVisualizer(GameVisualizer):
     async def set_game_round(self, new_round: int):
         """ Set Game Round """
         self._round = new_round
+        logging.info(f"------- Round {new_round} is now started -------<br><br>")
         await self.set_game_state(self._game_state)
 
     def get_game_state(self): return self._game_state
