@@ -6,8 +6,13 @@
         <script src="/cdn/pyodide/v0.23.4/full/pyodide.js"></script>
         <script src="/cdn/webrtc/adapter/adapter-latest.js"></script>
         <script src="/cdn/localSocket/localSocket.js"></script>
+        <link href="/cdn/bootstrap/5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+        <script src="/cdn/bootstrap/5.3.1/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+                crossorigin="anonymous"></script>
         <style>
-            #log-container { overflow: auto; height: 900px; }
+            #log-container { overflow: auto; height: 800px; }
             .log-warn { color: orange }
             .log-error { color: red }
             .log-info { color: skyblue }
@@ -56,7 +61,6 @@
                     }, '');
                 }
             }
-
 
             var pc = new RTCPeerConnection();
             var rtcDataChannel;
@@ -112,10 +116,12 @@
         </script>
     </head>
     <body>
-        <h1>FOS Controller Prototype</h1>
-        <button id="con_status_btn" onclick="rtcConnect()">Connecting...</button>
-        <br>
-        <div id="log-container"><pre id="log"></pre></div>
-        <br>
+        <div class="m-2">
+            <h1>FOS Controller Prototype</h1>
+            <button class="btn btn-secondary" id="con_status_btn" onclick="rtcConnect()">Connecting...</button>
+            <br><br>
+            <div id="log-container"><pre id="log"></pre></div>
+            <br>
+        </div>
     </body>
 </html>
