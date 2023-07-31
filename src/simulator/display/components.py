@@ -40,9 +40,8 @@ class GameVisualizer(object):
         self._log_file = None
 
         if logging:
-            # TODO: Fix Error
             self._log_file = open("play_log.json", "w+")
-            self._log_file.write(f"['{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}']")
+            self._log_file.write(f"[\"{datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')}, Python {sys.version}\"]")
 
     def __del__(self):
         if self.logging:
@@ -54,13 +53,19 @@ class GameVisualizer(object):
         if self.logging:
             if title == "round":
                 self._log_file.seek(1)
-                self._log_file.write("{'round': '"+msg+"'}, ")
+                behind = self._log_file.read()
+                self._log_file.seek(1)
+                self._log_file.write("{\"round\": \""+msg+"\"}, "+behind)
             elif msg[0] in ("{", "[") and msg[-1] in ("}", "]"):
                 self._log_file.seek(2)
-                self._log_file.write(f", '{title}': {msg}")
+                behind = self._log_file.read()
+                self._log_file.seek(2)
+                self._log_file.write(f"\"{title}\": {msg}, "+behind)
             else:
                 self._log_file.seek(2)
-                self._log_file.write(f", '{title}': '{msg}'")
+                behind = self._log_file.read()
+                self._log_file.seek(2)
+                self._log_file.write(f"\"{title}\": \"{msg}\", "+behind)
 
     async def set_round_mode(self, round_num: int, unit_table, target_list):
         """ Set Round Mode
