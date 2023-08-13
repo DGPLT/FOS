@@ -70,8 +70,16 @@ class WebConnectionBuilder(ConnectionBuilder):
             print("webRTC channel connected!")
             self.is_rtc = True
         else:
-            self._ws = WasmSocket(self.server_addr)
-            await self._ws.connect()
+            import ssl
+            try:
+                print("trying to connect to", self.server_addr)
+                self._ws = WasmSocket(self.server_addr)
+                await self._ws.connect()
+            except ssl.SSLError:
+                addr = self.server_addr.replace("s://", "://")
+                print(">> re-trying to connect to", addr)
+                self._ws = WasmSocket(addr)
+                await self._ws.connect()
 
     async def send(self, msg):
         if self.is_rtc:
@@ -99,7 +107,7 @@ class WebConnectionBuilder(ConnectionBuilder):
 
     @property
     def server_addr(self):
-        return self._server_ip if self.is_rtc else f"ws://{self._server_ip}:{self._server_port}"
+        return self._server_ip if self.is_rtc else f"wss://{self._server_ip}:{self._server_port}"
 
 
 if __name__ == "__main__":
