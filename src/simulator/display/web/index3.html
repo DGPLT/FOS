@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark" lang="en-us">
+  <head>
+    <title>FOS</title>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="/res/icon.ico">
+    <script src="/cdn/pyodide/v0.23.4/full/pyodide.js"></script>
+    <link href="/cdn/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/cdn/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+
+    <script src="/cdn/webrtc/adapter/adapter-latest.js"></script>
+    <script src="/cdn/localSocket/localSocket.js"></script>
+    <style>
+      #log-container { overflow: auto; height: 300px; }
+      .log-warn { color: orange }
+      .log-error { color: red }
+      .log-info { color: skyblue }
+      .log-log { color: grey }
+      .log-warn, .log-error { font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          FOS
+          <small id="fos_version_info">v1.0.0.0</small>
+          <div class="row">
+            <div class="col">
+              <div id="gamestate" class="ts-4">⚪ Round 0 Unknown</div>
+            </div>
+            <div class="col" id="gametime1">01:00</div>
+            <div class="col" id="gametime2">01:00</div>
+            <div class="col" id="gametime3">01:00</div>
+          </div>
+        </a>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link link-light" data-bs-toggle="modal" data-bs-target="#contributorModal">
+            Contributors
+          </button>
+          <div class="modal fade" id="contributorModal" tabindex="-1" aria-labelledby="contributorModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="contributorModalLabel">Contributors</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <h4>FOS Simulator</h4><br>
+                  <h6>Architecture Design:</h6>
+                  - Kang, Eun (강은) & Mun, Chae Un (문채운) & Doo, Jin Seo (두진서)<br><br>
+                  <h6>Data Analysis:</h6>
+                  - Kang, Eun (강은) & Kim, Kyung Hun (김경훈)<br><br>
+                  <h6>API Design/Validation:</h6>
+                  - Mun, Chae Un (문채운) & Oh, Myoung Jin (오명진)<br><br>
+                  <h6>Data Table Design:</h6>
+                  - Mun, Chae Un (문채운) & Doo, Jin Seo (두진서) & Kim, Kyung Hun (김경훈) & Jin, Ho Jin (진호진)<br><br>
+                  <h6>Visualization:</h6>
+                  - Myung, Gyung Min (명경민) & Mun, Chae Un (문채운)<br><br>
+                  <h6>Unit Test:</h6>
+                  - Jin, Ho Jin (진호진)
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="https://github.com/usfk-code-challenge-2023/FOS">
+            <img class="m-2" src="/res/github.svg" width="30" alt="Github" sizes="">
+          </a>
+          <div class="btn-group m-2">
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#scorePanelModal">
+              Download Log
+            </button>
+          </div>
+          <div class="btn-group m-2">
+            <button class="btn btn-primary" id="startButton">Start</button>
+            <button class="btn btn-primary" id="stopButton">Stop</button>
+            <button class="btn btn-primary" id="resetButton" onclick="location.reload()">Reset</button>
+          </div>
+          <div class="modal fade" id="scorePanelModal" tabindex="-1" aria-labelledby="scorePanelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="scorePanelModalLabel">Scores</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="score-panel-text1"></div>
+                <div class="modal-body" id="score-panel-text2"></div>
+                <div class="modal-body" id="score-panel-text3"></div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" id="downloadButton">Download Play Log</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="row gap-4">
+        <div class="col-auto">
+          <div class="box" style="height: 300px;">
+            <canvas id="gameview1" class="rounded-3" width="300" height="300"></canvas>
+          </div>
+        </div>
+        <div class="col-auto">
+          <div class="box" style="height: 300px;">
+            <canvas id="gameview2" class="rounded-3" width="300" height="300"></canvas>
+          </div>
+        </div>
+        <div class="col-auto">
+          <div class="box" style="height: 300px;">
+            <canvas id="gameview3" class="rounded-3" width="300" height="300"></canvas>
+          </div>
+        </div>
+        <div class="col">
+          <div class="box border rounded-3 overflow-scroll p-4 text-bg-secondary font-monospace" style="height:300px;">
+            <div id="output"></div>
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="row gap-4">
+        <div class="col">
+          <table class="table m-0" id="target1">
+            <thead>
+            <tr>
+              <th scope="col">Targeted</th>
+              <th scope="col">Name</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
+              <th scope="col">Type</th>
+              <th scope="col">Threat</th>
+              <th scope="col">Success Possibility(%)</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="target2">
+            <thead>
+            <tr>
+              <th scope="col">Targeted</th>
+              <th scope="col">Name</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
+              <th scope="col">Type</th>
+              <th scope="col">Threat</th>
+              <th scope="col">Success Possibility(%)</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="target3">
+            <thead>
+            <tr>
+              <th scope="col">Targeted</th>
+              <th scope="col">Name</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
+              <th scope="col">Type</th>
+              <th scope="col">Threat</th>
+              <th scope="col">Success Possibility(%)</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="unit1">
+            <thead>
+            <tr>
+              <th scope="col">Ordered</th>
+              <th scope="col">Available</th>
+              <th scope="col">Time of Return</th>
+              <th scope="col">Departure Time</th>
+              <th scope="col">Arrival Time</th>
+              <th scope="col">Base</th>
+              <th scope="col">Aircraft ID</th>
+              <th scope="col">Water Level</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="unit2">
+            <thead>
+            <tr>
+              <th scope="col">Ordered</th>
+              <th scope="col">Available</th>
+              <th scope="col">Time of Return</th>
+              <th scope="col">Departure Time</th>
+              <th scope="col">Arrival Time</th>
+              <th scope="col">Base</th>
+              <th scope="col">Aircraft ID</th>
+              <th scope="col">Water Level</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col">
+          <table class="table m-0" id="unit3">
+            <thead>
+            <tr>
+              <th scope="col">Ordered</th>
+              <th scope="col">Available</th>
+              <th scope="col">Time of Return</th>
+              <th scope="col">Departure Time</th>
+              <th scope="col">Arrival Time</th>
+              <th scope="col">Base</th>
+              <th scope="col">Aircraft ID</th>
+              <th scope="col">Water Level</th>
+            </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+      <br>
+      <table class="table m-0" id="specsheet">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Aircraft</th>
+          <th scope="col">Velocity (km/h)</th>
+          <th scope="col">Time to Ready (min)</th>
+          <th scope="col">Cost (USD)</th>
+          <th scope="col">Cover Area</th>
+          <th scope="col">Time Filling Water Tank (min)</th>
+          <th scope="col">Success Possibility(%)</th>
+        </tr>
+        </thead>
+      </table>
+      <br>
+      <div id="log-container"><pre id="log"></pre></div>
+      <br>
+    </div>
+    <script>
+      rewireLoggingToElement(
+        () => document.getElementById("log"),
+        () => document.getElementById("log-container"), true);
+
+      function rewireLoggingToElement(eleLocator, eleOverflowLocator, autoScroll) {
+        fixLoggingFunc('log');
+        fixLoggingFunc('debug');
+        fixLoggingFunc('warn');
+        fixLoggingFunc('error');
+        fixLoggingFunc('info');
+
+        function fixLoggingFunc(name) {
+          console['old' + name] = console[name];
+          console[name] = function(...arguments) {
+            const output = produceOutput(name, arguments);
+            const eleLog = eleLocator();
+
+            if (autoScroll) {
+              const eleContainerLog = eleOverflowLocator();
+              const isScrolledToBottom = eleContainerLog.scrollHeight - eleContainerLog.clientHeight <= eleContainerLog.scrollTop + 1;
+              eleLog.innerHTML += output + "<br>";
+              if (isScrolledToBottom) {
+                eleContainerLog.scrollTop = eleContainerLog.scrollHeight - eleContainerLog.clientHeight;
+              }
+            } else {
+              eleLog.innerHTML += output + "<br>";
+            }
+
+            console['old' + name].apply(undefined, arguments);
+          };
+        }
+
+        function produceOutput(name, args) {
+          return args.reduce((output, arg) => {
+            return output +
+              "<span class=\"log-" + (typeof arg) + " log-" + name + "\">" +
+                (typeof arg === "object" && (JSON || {}).stringify ? JSON.stringify(arg) : arg) +
+                "</span>&nbsp;";
+          }, '');
+        }
+      }
+
+      var pc = new RTCPeerConnection();
+      var rtcDataChannel;
+      var rtcBuffer = "";
+      var rtcBuffFlush = () => {
+        rtcBuffer = ""
+      };
+      var rtcConnected = false
+      var rtcConnect = () => init(rtcDataChannel = pc.createDataChannel("chat"));
+      pc.ondatachannel = e => init(rtcDataChannel = e.channel);
+      var init = rtcDataChannel => {
+        rtcDataChannel.onopen = e => {
+          rtcConnected = true;
+        }
+        rtcDataChannel.onclose = e => {
+          rtcConnected = false;
+        }
+        rtcDataChannel.onmessage = e => {
+          rtcBuffer = e.data;
+        };
+      };
+      pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
+      pc.onicecandidate = e => send({ candidate: e.candidate });
+      pc.onnegotiationneeded = e => pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .then(() => send({ sdp: pc.localDescription }))
+        .catch(console.log);
+      var sc = new localSocket(), send = obj => sc.send(JSON.stringify(obj));
+      var incoming = msg => msg.sdp &&
+        pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
+          .then(() => pc.signalingState == "stable" || pc.createAnswer()
+          .then(answer => pc.setLocalDescription(answer))
+          .then(() => send({ sdp: pc.localDescription })))
+          .catch(console.log) || msg.candidate &&
+        pc.addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(console.log);
+      sc.onmessage = e => incoming(JSON.parse(e.data));
+
+      async function main() {
+        let pyodide = await loadPyodide();
+        await pyodide.loadPackage("setuptools")
+        await pyodide.loadPackage("micropip")
+		const micropip = pyodide.pyimport("micropip");
+		try {
+		  await micropip.install("/cdn/packages/xmltodict-0.13.0-py2.py3-none-any.whl");
+		  await micropip.install("/cdn/packages/wasmsockets-0.1.4-py3-none-any.whl");
+		  await micropip.install("/dist/fos_simulator-2.0.0b0-py3-none-any.whl");
+        } catch (error) {
+          console.error(error);
+          await micropip.install("https://dooplns.github.io/releases/fos_simulator-1.1.0.0-py3-none-any.whl");
+        }
+        pyodide.runPython(`
+          from js import prompt
+          __builtins__.input = prompt
+          from main3 import *
+        `);
+        document.getElementById("startButton").addEventListener("click", () => {
+          console.log("Start Button Pressed......")
+          pyodide.globals.get("start")();
+        });
+        document.getElementById("stopButton").addEventListener("click", () => {
+          console.log("Stop Button Pressed......")
+          pyodide.globals.get("pause")();
+        });
+        document.getElementById("downloadButton").addEventListener("click", () => {
+          let play_log = pyodide.FS.readFile("play_log.json", {encoding: "utf8"});
+          const file = new File([play_log], "play_log.json", {type: "text/plain"});
+
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(file)
+          link.href = url
+          link.download = file.name
+          document.body.appendChild(link)
+          link.click()
+
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+        });
+
+        await pyodide.globals.get("init")();
+        await pyodide.globals.get("main")();
+      };
+
+      main();
+    </script>
+  </body>
+</html>

@@ -136,7 +136,7 @@ f'''<operations>
     while(True):
         check = 0
         trigger = 0
-        time.sleep(0.25)
+        time.sleep(0.1)
         await send(f"/order/{xml_skip}".encode())
 
         order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -188,7 +188,7 @@ f'''<operations>
     </order>
 </operations>'''
             
-            time.sleep(0.25)
+            time.sleep(0.1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -291,7 +291,7 @@ f'''<operations>
         <course>{random_target[1]}</course>
     </order>
 </operations>'''
-    time.sleep(0.25)
+    time.sleep(0.1)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -306,7 +306,7 @@ f'''<operations>
     aircraft_number = 4
     iter_num_list = []
     while True:
-        time.sleep(0.25)
+        time.sleep(0.1)
         check = 0
         trigger = 0
         await send(f"/order/{xml_skip}".encode())
@@ -358,7 +358,7 @@ f'''<operations>
         <course>{random_target[0]}</course>
     </order>
 </operations>'''
-            time.sleep(0.25)
+            time.sleep(0.1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -466,7 +466,7 @@ f'''<operations>
         <course>{random_target[2]}</course>
     </order>
 </operations>'''
-    time.sleep(0.25)
+    time.sleep(0.1)
     await send(f"/order/{xml}".encode())
 
     order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')
@@ -479,7 +479,7 @@ f'''<operations>
 
     aircraft_number = 6
     while True:
-        time.sleep(0.25)
+        time.sleep(0.1)
         check = 0
         trigger = 0
         await send(f"/order/{xml_skip}".encode())
@@ -529,7 +529,7 @@ f'''<operations>
         <course>{random_target[0]}</course>
     </order>
 </operations>'''
-            time.sleep(0.25)
+            time.sleep(0.1)
             await send(f"/order/{xml}".encode())
 
             order_result = pd.DataFrame.from_dict(data=json.loads(await recv()), orient='index')

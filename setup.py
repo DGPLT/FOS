@@ -12,7 +12,7 @@ dependencies = requirements.read().split("\n")
 requirements.close()
 
 module = [fname.split('.')[1][1:].replace("/", ".") for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.py", recursive=True))
-          if './src/simulator/' in fname or './config/' in fname] + ["main"]
+          if './src/simulator/' in fname or './config/' in fname] + ["main"] + ["main3"]
 print(module)
 
 with open("./config/info.json") as f_info:

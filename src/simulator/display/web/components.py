@@ -19,7 +19,7 @@ from enum import Enum
 
 
 class JSVisualizer(GameVisualizer):
-    _PIXEL_EXPANSION = 0.5
+    _PIXEL_EXPANSION = 0.25
     _MAX_CORDINATION = 1200
     _SCREEN_WIDTH = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
     _SCREEN_HEIGHT = round(_MAX_CORDINATION * _PIXEL_EXPANSION)
@@ -163,6 +163,7 @@ class JSVisualizer(GameVisualizer):
             logging.basicConfig(handlers=[CustomLogHandler(self.api_log)], level=logging.INFO, format=formatting)
 
             self.canvas_id = canvas_id
+            print(self.canvas_id)
             self.canvas: js.CanvasRenderingContext2D = getElementById(canvas_id).getContext("2d")  # type: ignore
             self.unit_table_id = unit_table_id
             self.unit_table: js.HTMLTableElement = getElementById(unit_table_id)  # type: ignore
