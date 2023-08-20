@@ -132,3 +132,31 @@ build.py : pyinstaller build script
 main.py : pygbag main script for web browsers
 run.py : runnable main script for desktop environment
 </pre>
+___
+
+## **7. Build and Run**
+<pre>
+python ./setup.py develop
+python ./setup.py develop --user
+python ./setup.py install  # to make egg file and install
+python ./setup.py bdist_wheel  # to make whl file
+</pre>
+<pre>
+python ./build.py
+</pre>
+https://emscripten.org/docs/getting_started/downloads.html
+<pre>
+./emsdk/emsdk install latest
+./emsdk/emsdk activate latest
+source ./emsdk/emsdk_env.sh
+</pre>
+<pre> # for Pyodide 0.23.2 - 0.23.4
+./emsdk/emsdk install 3.1.32
+./emsdk/emsdk activate 3.1.32
+source ./emsdk/emsdk_env.sh
+</pre>
+https://developer.mozilla.org/en-US/docs/WebAssembly/C_to_Wasm
+https://pyodide.org/en/0.23.2/development/new-packages.html
+<pre>
+python3.11 ./setup.py emcc bdist_wheel
+</pre>
