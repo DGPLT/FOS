@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by ??????
 Description : Game Scenarios (Rounds)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from math import log10
+import traceback
 import asyncio
 import json
 
@@ -75,7 +76,7 @@ class GameScenarios:
 
         # Update timeline
         if not unit_table.check_table_mutex():
-            money_usage, suppressed = unit_table.update_table()  # updates are applied first
+            money_usage, suppressed, can_continue = unit_table.update_table()  # updates are applied first
 
             ## Round Information Update
             current_round.add_used_money(money_usage)
@@ -90,7 +91,7 @@ class GameScenarios:
                 current_round.set_win()
                 return False  # Win!
             ## Check if time is over 2359 hrs
-            elif unit_table.current_time > "2359" or unit_table.current_time == "0000":
+            elif not can_continue or unit_table.current_time > "2359" or unit_table.current_time == "0000":
                 return False  # Game over
             ## Normal Operation
             else:
@@ -104,15 +105,16 @@ class GameScenarios:
                 unit_table.apply_order(option)
                 # If order successfully added
                 await func(code=200, message="Success")
-                visualizer.add_order_log(option, unit_table.current_time)
+                await visualizer.add_order_log(option, unit_table.current_time)
                 unit_table.release_table()  # Table release
             except Exception as e:
-                print(e)
-                await func(code=500, message=str(e))
+                traceback.print_exc()
+                await func(code=500, message=repr(e))
         elif request == "/data":
             await func(spec_sheet=Aircrafts.to_json(),
-                       target_list=current_round.target_list.to_json(),
-                       unit_table=json.dumps(unit_table))
+                       target_list=lambda: current_round.target_list.to_json(),
+                       unit_table=lambda: json.dumps(unit_table),
+                       time=unit_table.current_time)
         else:
             await func(code=403)
 

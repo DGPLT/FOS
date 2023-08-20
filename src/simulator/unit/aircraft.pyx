@@ -27,13 +27,13 @@ class BasicAircraft:
 
     def __init__(self, dictionary):
         Type, CoverArea = self.Type, self.CoverArea
-        self._type: Type = Type(dictionary["Aircraft Type"])
-        self._velocity: int = int(dictionary["Velocity"])
-        self._etrdy: int = int(dictionary["ETRDY"])
-        self._cost: int = int(dictionary["Cost"])
-        self._area: CoverArea = CoverArea(int(dictionary["Cover Area"]))
-        self._tank: float = float(dictionary["Water Tank"])
-        self._poss: int = int(dictionary["Possibility"])
+        self._type: Type = Type(dictionary['Aircraft Type'])
+        self._velocity: int = int(dictionary['Velocity'])
+        self._etrdy: int = int(dictionary['ETRDY'])
+        self._cost: int = int(dictionary['Cost'])
+        self._area: CoverArea = CoverArea(int(dictionary['Cover Area']))
+        self._tank: float = float(dictionary['Water Tank'])
+        self._poss: int = int(dictionary['Possibility'])
         if not (0 <= self._poss <= 100):
             raise ValueError("Possibility must be between 0 and 100.")
 
@@ -51,6 +51,9 @@ class BasicAircraft:
 
     @property
     def cover_area(self) -> CoverArea: return self._area
+
+    @property
+    def water_tank(self) -> float: return self._tank
 
     @property
     def possibility(self) -> int: return self._poss

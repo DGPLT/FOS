@@ -9,14 +9,14 @@ import json
 from typing import Callable
 import xml.etree.ElementTree as elemTree
 
-from .con_connector import ConnectionBuilder
+from .con_connector import ConnectionBuilder, WebConnectionBuilder
 
 
 class ApiResolver:
     """ Asynchronous API resolver """
 
-    def __init__(self):
-        self._controller = ConnectionBuilder()
+    def __init__(self, use_websocket: bool = False):
+        self._controller = WebConnectionBuilder() if use_websocket else ConnectionBuilder()
         self._connected = False
 
     @property
@@ -75,9 +75,9 @@ class ApiResolver:
             try:
                 elemTree.fromstring(xml)
             except Exception as e:  # format error
-                await self._controller.send(json.dumps({"code": 400, "message": str(e)}))
+                await self._controller.send(json.dumps({'code': 400, 'message': str(e)}))
             return "/order", request[len("/order/"):], self._send_operation_result
-        
+
         if request == "/start":
             return request, "", self._send_game_start_signal
         elif request == "/data/aircraft_specsheet":
@@ -91,56 +91,56 @@ class ApiResolver:
         elif request == "/disconnect":
             await self.disconnect()
         else:
-            await self._controller.send(json.dumps({"code": 404, "message": "Not Found"}))
-            return request, "", lambda **kwargs: None
+            await self._controller.send(json.dumps({'code': 404, 'message': "Not Found"}))
+            return request, "", self._not_a_proper_request
 
     async def _send_game_start_signal(self, **kwargs):
         """ Send a game start signal
         data = { "round": int }
         """
-        if "code" in kwargs and kwargs["code"] == 403:
-            await self._controller.send(json.dumps({"code": 403, "message": "Forbidden"}))
-        elif "code" in kwargs and kwargs["code"] == 302:
-            await self._controller.send(json.dumps({"code": 302, "message": kwargs.get("redi_url", "Redirect")}))
+        if "code" in kwargs and kwargs['code'] == 403:
+            await self._controller.send(json.dumps({'code': 403, 'message': "Forbidden"}))
+        elif "code" in kwargs and kwargs['code'] == 302:
+            await self._controller.send(json.dumps({'code': 302, 'message': kwargs.get("redi_url", "Redirect")}))
         else:
             await self._controller.send(json.dumps(
-                {"code": 200, "message": f"Round {kwargs['round']} is ready.", "data": kwargs}))
+                {'code': 200, 'message': f"Round {kwargs['round']} is ready.", 'data': kwargs}))
 
     async def _send_aircraft_specsheet(self, **kwargs):
         """ Send the spec sheet of aircraft
         data = {} --- aircraft_spec_sheet.py
         """
-        if "code" in kwargs and kwargs["code"] == 302:
-            await self._controller.send(json.dumps({"code": 302, "message": kwargs.get("redi_url", "Redirect")}))
-        elif "code" in kwargs and kwargs["code"] == 401:
-            await self._controller.send(json.dumps({"code": 401, "message": "Unauthorized"}))
+        if "code" in kwargs and kwargs['code'] == 302:
+            await self._controller.send(json.dumps({'code': 302, 'message': kwargs.get("redi_url", "Redirect")}))
+        elif "code" in kwargs and kwargs['code'] == 401:
+            await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {"code": 200, "message": "Success", "data": kwargs["spec_sheet"]}))
+                {'code': 200, 'message': "Success", 'data': kwargs['spec_sheet']}))
 
     async def _send_target_list(self, **kwargs):
         """ Send the current target status
         data = {} --- locations.py
         """
-        if "code" in kwargs and kwargs["code"] == 302:
-            await self._controller.send(json.dumps({"code": 302, "message": kwargs.get("redi_url", "Redirect")}))
-        elif "code" in kwargs and kwargs["code"] == 401:
-            await self._controller.send(json.dumps({"code": 401, "message": "Unauthorized"}))
+        if "code" in kwargs and kwargs['code'] == 302:
+            await self._controller.send(json.dumps({'code': 302, 'message': kwargs.get("redi_url", "Redirect")}))
+        elif "code" in kwargs and kwargs['code'] == 401:
+            await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {"code": 200, "message": "Success", "data": kwargs["target_list"]}))
+                {'code': 200, 'message': "Success", 'data': kwargs['target_list'](), 'time': kwargs['time']}))
 
     async def _send_unit_table(self, **kwargs):
         """ Send the current unit table status
         data = {} --- unit_table.py
         """
-        if "code" in kwargs and kwargs["code"] == 302:
-            await self._controller.send(json.dumps({"code": 302, "message": kwargs.get("redi_url", "Redirect")}))
-        elif "code" in kwargs and kwargs["code"] == 401:
-            await self._controller.send(json.dumps({"code": 401, "message": "Unauthorized"}))
+        if "code" in kwargs and kwargs['code'] == 302:
+            await self._controller.send(json.dumps({'code': 302, 'message': kwargs.get("redi_url", "Redirect")}))
+        elif "code" in kwargs and kwargs['code'] == 401:
+            await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {"code": 200, "message": "Success", "data": kwargs["unit_table"]}))
+                {'code': 200, 'message': "Success", 'data': kwargs['unit_table'](), 'time': kwargs['time']}))
 
     async def _send_operation_result(self, **kwargs):
         """ Send operation apply trial result of an order
@@ -154,10 +154,13 @@ class ApiResolver:
             "round": int, "is_win": bool, "score": int
         }
         """
-        if "code" in kwargs and kwargs["code"] == 403:
-            await self._controller.send(json.dumps({"code": 403, "message": "Forbidden"}))
-        elif "code" in kwargs and kwargs["code"] == 401:
-            await self._controller.send(json.dumps({"code": 401, "message": "Unauthorized"}))
+        if "code" in kwargs and kwargs['code'] == 403:
+            await self._controller.send(json.dumps({'code': 403, 'message': "Forbidden"}))
+        elif "code" in kwargs and kwargs['code'] == 401:
+            await self._controller.send(json.dumps({'code': 401, 'message': "Unauthorized"}))
         else:
             await self._controller.send(json.dumps(
-                {"code": 200, "message": f"Round {kwargs['round']} is finished.", "data": kwargs}))
+                {'code': 200, 'message': f"Round {kwargs['round']} is finished.", 'data': kwargs}))
+
+    async def _not_a_proper_request(self, **kwargs):
+        pass

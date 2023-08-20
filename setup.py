@@ -17,6 +17,7 @@ from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 from exodide import build
 import glob
+import json
 import sys
 import os
 
@@ -46,8 +47,11 @@ requirements = open("requirements_emcc.txt" if EMCC else "requirements.txt", "r+
 dependencies = requirements.read().split("\n")
 requirements.close()
 
-setup(name="fos_simulator",
-      version="1.0.0.0",
+with open("./config/info.json") as f_info:
+    info = json.load(f_info)
+
+setup(name=info['name'],
+      version=info['version'],
       zip_safe=False,  # Without these two options
       include_package_data=True,  # PyInstaller may not find your C-Extensions
       packages=find_packages(),

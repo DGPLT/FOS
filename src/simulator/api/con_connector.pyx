@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by MUN, CHAEUN
 Description : AI/ML Controller Connector
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import asyncio
+from wasmsockets.client import WasmSocket
 
 
 class ConnectionBuilder(object):
@@ -50,6 +51,63 @@ class ConnectionBuilder(object):
                 break
         data = b''.join(fragments)
         return data.decode(self.ENCODING)
+
+
+class WebConnectionBuilder(ConnectionBuilder):
+    def __init__(self, host: str = "", port: int = 0):
+        super().__init__(host, port)
+        self.is_rtc = False
+
+    async def connect(self):
+        if self._server_ip == "rtc":
+            print("trying to connect with webRTC...")
+            import js as _js
+            global js
+            js = _js
+            js.rtcConnect()
+            while not js.rtcConnected:
+                await asyncio.sleep(0)
+            print("webRTC channel connected!")
+            self.is_rtc = True
+        else:
+            import ssl
+            try:
+                print("trying to connect to", self.server_addr)
+                self._ws = WasmSocket(self.server_addr)
+                await self._ws.connect()
+            except ssl.SSLError:
+                addr = self.server_addr.replace("s://", "://")
+                print(">> re-trying to connect to", addr)
+                self._ws = WasmSocket(addr)
+                await self._ws.connect()
+
+    async def send(self, msg):
+        if self.is_rtc:
+            if type(msg) == bytes:
+                msg = msg.decode(self.ENCODING)
+            js.rtcDataChannel.send(msg)
+        else:
+            await self._ws.send(msg.encode(self.ENCODING))
+
+    async def recv(self):
+        if self.is_rtc:
+            while not js.rtcBuffer:
+                await asyncio.sleep(0)
+            msg = js.rtcBuffer
+            js.rtcBuffFlush()
+        else:
+            msg = await self._ws.recv()
+        if type(msg) == str:
+            pass
+        elif type(msg) == bytes:
+            msg = msg.decode(self.ENCODING)
+        else:  # pyodide.ffi.JsProxy -> memoryview -> str
+            msg = str(msg.to_py(), self.ENCODING)
+        return msg
+
+    @property
+    def server_addr(self):
+        return self._server_ip if self.is_rtc else f"wss://{self._server_ip}:{self._server_port}"
 
 
 if __name__ == "__main__":

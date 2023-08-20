@@ -64,14 +64,15 @@ class TargetList:
                 opt = choice((0, 1, 3, 4))
                 area = [keys[i] for i in (opt, opt+1, opt+3, opt+4)]
                 occurred = sample(area, round_num)
-                target_type = {key: 2 if key in occurred else 1 if area else 0 for key in keys}
-                target_threats = {key: 100 if key in occurred else randrange(1, 100) if area else 0 for key in keys}
-                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_type = {key: 2 if key in occurred else 1 if key in area else 0 for key in keys}
+                target_threats = {key: 100 if key in occurred else randrange(1, 100) if key in area else 0 for key in keys}
+                target_priorities = {data[0]: i+1 if data[0] in occurred or data[0] in area else 0
+                                     for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
             else:
                 selected = sample(keys, round_num)
                 target_type = {key: 2 if key in selected else 1 for key in keys}
                 target_threats = {key: 100 if key in selected else randrange(1, 100) for key in keys}
-                target_priorities = {data[0]: i for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
+                target_priorities = {data[0]: i+1 for i, data in enumerate(sorted(target_threats.items(), key=lambda x: x[1], reverse=True))}
 
             [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
 
@@ -96,19 +97,22 @@ class TargetList:
             """ Check All the fires are currently suppressed """
             return True not in [self[key].type == self._data_holder.TargetType.FIRE for key in self.keys()]
 
-        def update_target_list(self):
+        def update_target_list(self) -> bool:
             """ Update Target List at every order time
             **** PRIORITY IS NOT BEING UPDATED WITH THIS METHOD ****
+            :return bool: if false, then all possibility of suppressing file is 0 (game over)
             """
             keys = self.keys()
 
-            # Decrease Probability of Suppressing Fire
+            # Decrease Probability of Suppressing Fire - by 0/1 in a min
             fires = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.FIRE]
-            [fire.set_probability(fire.probability-randrange(0, 2)) for fire in fires]  # decrease by 5
+            results = [fire.set_probability(fire.probability-choice([0, 0, 1])) for fire in fires]
 
             # Check if fire is spreading to other targets
             possibles = [self[key] for key in keys if self[key].type == self._data_holder.TargetType.POSSIBLE]
-            [tg.set_fire_occurred() for tg in possibles if randrange(0, 101) <= tg.threat and randrange(0, 20) == 0]
+            [tg.set_fire_occurred() for tg in possibles if randrange(0, 101) <= tg.threat and randrange(0, 80) == 0]
+
+            return 0 not in results
 
     class Location:
         """ Coordination Holder Class """
@@ -116,13 +120,13 @@ class TargetList:
             self._loc_dict = loc_dict
 
         @property
-        def lat(self): return self._loc_dict["latitude"]
+        def lat(self): return self._loc_dict['latitude']
 
         @property
-        def long(self): return self._loc_dict["longitude"]
+        def long(self): return self._loc_dict['longitude']
 
         @property
-        def coords(self) -> tuple[int, int]: return self._loc_dict["longitude"], self._loc_dict["latitude"]
+        def coords(self) -> tuple[int, int]: return self._loc_dict['longitude'], self._loc_dict['latitude']
 
     class Target(Location):
         """ Target Coordination Holder Class """
@@ -137,41 +141,42 @@ class TargetList:
                               100 if self.TargetType(target_type) == self.TargetType.FIRE else 0)
 
         def set_property(self, target_type: int, threat: int, priority: int, targeted: bool, probability: int):
-            self._loc_dict["targeted"] = targeted
-            self._loc_dict["priority"] = priority
-            self._loc_dict["type"] = target_type
-            self._loc_dict["threat"] = abs(threat) if abs(threat) <= 100 else 100
-            self._loc_dict["probability"] = probability
+            self._loc_dict['targeted'] = targeted
+            self._loc_dict['priority'] = priority
+            self._loc_dict['type'] = target_type
+            self._loc_dict['threat'] = abs(threat) if abs(threat) <= 100 else 100
+            self._loc_dict['probability'] = probability
 
-        def set_targeted(self, targeted=True): self._loc_dict["targeted"] = targeted
+        def set_targeted(self, targeted=True): self._loc_dict['targeted'] = targeted
 
         def set_suppressed(self):
             self.set_property(0, 0, 0, False, 0)
 
-        def set_probability(self, probability):
+        def set_probability(self, probability) -> int:
             if probability < 0:
                 probability = 0
             elif probability > 100:
                 probability = 100
-            self._loc_dict["probability"] = probability
+            self._loc_dict['probability'] = probability
+            return probability
 
         def set_fire_occurred(self):
-            self._loc_dict["type"] = 2
-            self._loc_dict["probability"] = 100
+            self._loc_dict['type'] = 2
+            self._loc_dict['probability'] = 100
 
         @property
-        def is_targeted(self): return self._loc_dict["targeted"]
+        def is_targeted(self): return self._loc_dict['targeted']
 
         @property
-        def priority(self): return self._loc_dict["priority"]
+        def priority(self): return self._loc_dict['priority']
 
         @property
-        def type(self): return self.TargetType(self._loc_dict["type"])
+        def type(self): return self.TargetType(self._loc_dict['type'])
 
         @property
-        def threat(self): return self._loc_dict["threat"]
+        def threat(self): return self._loc_dict['threat']
 
         @property
-        def probability(self): return self._loc_dict["probability"]
+        def probability(self): return self._loc_dict['probability']
 
     def to_json(self): return json.dumps(self._coordinates)

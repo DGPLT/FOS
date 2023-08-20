@@ -44,11 +44,11 @@ class OperationOrderList(dict):
     class OperationOrder:
         """ Single Operation Order class """
 
-        def __init__(self, time: str, base: str, aircraft_type: str, aircraft_id: str, mission_type: str, course: str):
+        def __init__(self, time: str, base: str, aircraft_type: str, track_number: str, mission_type: str, course: str):
             self._operation_time = time  # operation start time
             self._base = base
             self._aircraft_type: BasicAircraft.Type = BasicAircraft.Type(aircraft_type)
-            self._aircraft_id = aircraft_id
+            self._aircraft_id = track_number
             self._target = course.replace(" ", "").split(",")
             self._mission_type = OperationOrderList.MissionType(int(mission_type))
             self._done = False
@@ -135,13 +135,16 @@ class OperationOrderList(dict):
             # Parse XML
             xml_parse = xmltodict.parse(order_xml)
             xml_dict = json.loads(json.dumps(xml_parse))
-            order_list = xml_dict["operations"].pop("order", [])
+            operations = {} if xml_dict['operations'] is None else xml_dict['operations']
+            order_list = operations.pop("order", [])
+            if type(order_list) == dict:
+                order_list = [order_list]
 
             # Check XML Schema
-            if len(xml_dict) != 1 or len(xml_dict["operations"]) > 0:
+            if len(xml_dict) != 1 or len(operations) > 0:
                 raise KeyError("Too many keys exist in the XML then expected.")
 
-            return {order['aircraft_id']: OperationOrderList.OperationOrder(**order).validate_order(
+            return {order['track_number']: OperationOrderList.OperationOrder(**order).validate_order(
                 current_time, get_by_aid, aid_list, get_unit, targets) for order in order_list}
 
     def add_order(self, order_xml: str, current_time: str, get_by_aid: Callable[[str], BasicAircraft],
