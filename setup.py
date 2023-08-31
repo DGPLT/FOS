@@ -37,9 +37,11 @@ cython_directives = {
     'embedsignature': True,
 }
 
+modules = list(map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyx", recursive=True)))
+print(modules)
 extensions = cythonize([
     Extension(name=fname.split('.')[1][1:].replace("/", "."), sources=[fname[2:]], include_dirs=[])
-    for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyx", recursive=True))
+    for fname in modules
     if './build/' not in fname and './dist/' not in fname and './cpython/' not in fname and './emsdk/' not in fname
 ], compiler_directives=cython_directives)
 
