@@ -54,7 +54,7 @@ class UnitTable(dict):
 
             # fill zero
             new_time_str = f"{str(new_hours).zfill(2)}{str(new_minutes).zfill(2)}"
-            return new_time_str
+            return str(new_time_str)
         except ValueError:
             raise ValueError("Invalid time format. Please use HHMM format (e.g., 0900).")
 

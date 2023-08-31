@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-### Alias : components.py & Last Modded : 2023.05.12. ###
+### Alias : components.pyx & Last Modded : 2023.05.12. ###
 Coded with Python 3.10 Grammar by Myung, Gyung Min
 Description : Web Visualization
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -100,15 +100,15 @@ class JSVisualizer(GameVisualizer):
 
         def to_str(self, current_round: int) -> str:
             if self == self.RUNNING:
-                return f"🟢 Round {current_round} Running"
+                return u"🟢 Round " + str(current_round) + " Running"
             elif self == self.END:
-                return f"🔴 Round {current_round} End"
+                return u"🔴 Round " + str(current_round) + " End"
             elif self == self.ERROR:
-                return f"🟠 Round {current_round} Error"
+                return u"🟠 Round " + str(current_round) + " Error"
             elif self == self.PAUSE:
-                return f"🟡 Round {current_round} Pause"
+                return u"🟡 Round " + str(current_round) + " Pause"
             else:
-                return f"⚪ Round {current_round} Unknown"
+                return u"⚪ Round " + str(current_round) + " Unknown"
 
     class JSElements(object):
         class JSTable(object):
