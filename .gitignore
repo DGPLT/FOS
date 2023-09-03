@@ -32,6 +32,7 @@ MANIFEST
 *.manifest
 build.key
 #*.spec
+*.c
 config/*.c
 src/simulator/*.c
 src/simulator/*/*.c
