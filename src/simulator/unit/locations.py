@@ -5,6 +5,7 @@ Coded with Python 3.10 Grammar by Kim, KyoungHun
 Description : Target Information Maintainer Class
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 from random import randrange, choice, sample
+from typing import Union
 from enum import Enum
 import json
 import copy
@@ -76,7 +77,7 @@ class TargetList:
 
             [self[key].init_property(target_type[key], target_threats[key], target_priorities[key]) for key in keys]
 
-        def apply_targeting_operation(self, target_name: str, possibility_of_aircraft: int) -> bool:
+        def apply_targeting_operation(self, target_name: str, possibility_of_aircraft: Union[int, float]) -> bool:
             """ Apply Targeting Operation - Check if fire is suppressed
             :return True: when fire is suppressed
             """

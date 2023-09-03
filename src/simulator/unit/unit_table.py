@@ -220,7 +220,7 @@ class UnitTable(dict):
         # Let OperationOrderList Add New Orders
         ## Check if the order time is correct
         self._order_list.add_order(
-            order_xml, self._current_time, get_by_aid, self._aircraft_ids, lambda aid: self[aid], targets.keys())
+            order_xml, self._current_time, get_by_aid, self._aircraft_ids, lambda aid: self[aid], tuple(targets.keys()))
 
         # Initialize Targeted Values
         [targets[key].set_targeted(False) for key in targets.keys()]
