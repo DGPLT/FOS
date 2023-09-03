@@ -96,7 +96,7 @@ with open('build/version.rc', 'wt', encoding='utf-8') as f:
 # INCLUDE OR EXCLUDE MODULES
 installed_packages = re.split(r"[\r\n]", subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode('utf-8'))
 project_modules = [fname.split('.')[1][1:].replace("/", ".") for fname in map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyd", recursive=True)) if './build/' not in fname and './dist/' not in fname and './cpython/' not in fname and './emsdk/' not in fname]
-PACKAGES = ['cryptography', 'tinyaes', 'pyparsing', 'setuptools', 'pyinstaller-hooks-contrib', 'xml.etree', 'xml.etree.ElementTree']
+PACKAGES = ['cryptography', 'tinyaes', 'pyparsing', 'setuptools', 'pyinstaller-hooks-contrib', 'xml.etree', 'xml.etree.ElementTree', 'wasmsockets.client']
 with open("requirements.txt", "rt", encoding='utf-8') as f:  # include
     requirements = [re.split(r"[~=<>]", pkg)[0] for pkg in f.readlines() if pkg != '' and pkg != '\n']
     PACKAGES.extend(requirements)
