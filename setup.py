@@ -26,6 +26,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 EMCC = False
 
+# Apply EMCC build env
 if "emcc" in sys.argv:
     sys.argv.remove("emcc")
     os.environ['CC'] = "emcc"
@@ -33,10 +34,19 @@ if "emcc" in sys.argv:
     os.environ['LDSHARED'] = "emcc -shared"
     EMCC = True
 
+# Fix exodide package
+class _build_ext(build.build_ext):
+    def get_ext_filename(self, ext_name):
+        ext = ext_name.split(".")
+        return os.path.join(*ext) + f".cpython-{sys.version_info[0]}{sys.version_info[1]}-wasm32-emscripten.so"
+build.build_ext = _build_ext
+
+# cython setting
 cython_directives = {
     'embedsignature': True,
 }
 
+# listing modules
 modules = list(map(lambda x: x.replace("\\", "/"), glob.glob("./**/*.pyx", recursive=True)))
 print(modules)
 extensions = cythonize([
@@ -45,13 +55,16 @@ extensions = cythonize([
     if './build/' not in fname and './dist/' not in fname and './cpython/' not in fname and './emsdk/' not in fname
 ], compiler_directives=cython_directives)
 
+# dependencies settings
 requirements = open("requirements_emcc.txt" if EMCC else "requirements.txt", "r+")
 dependencies = requirements.read().split("\n")
 requirements.close()
 
+# build information
 with open("./config/info.json") as f_info:
     info = json.load(f_info)
 
+# build!
 setup(name=info['name'],
       version=info['version'],
       zip_safe=False,  # Without these two options
