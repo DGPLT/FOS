@@ -4,7 +4,7 @@
     <title>FOS</title>
     <meta charset="utf-8">
     <link rel="shortcut icon" href="/res/icon.ico">
-    <script src="/cdn/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script src="/cdn/pyodide/v0.22.0/full/pyodide.js"></script>
     <link href="/cdn/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <script src="/cdn/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
 
@@ -246,10 +246,10 @@
 		try {
 		  await micropip.install("/cdn/packages/xmltodict-0.13.0-py2.py3-none-any.whl");
 		  await micropip.install("/cdn/packages/wasmsockets-0.1.4-py3-none-any.whl");
-		  await micropip.install("/dist/fos_simulator-1.1.0.0-py3-none-any.whl");
+		  await micropip.install("/dist/fos_simulator-1.1.0.0-cp310-cp310-emscripten_3_1_27_wasm32.whl");
         } catch (error) {
           console.error(error);
-          await micropip.install("https://dooplns.github.io/releases/fos_simulator-1.1.0.0-py3-none-any.whl");
+          await micropip.install("https://dooplns.github.io/releases/fos_simulator-1.1.0.0-cp310-cp310-emscripten_3_1_27_wasm32.whl");
         }
         pyodide.runPython(`
           from js import prompt

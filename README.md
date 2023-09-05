@@ -150,7 +150,12 @@ https://emscripten.org/docs/getting_started/downloads.html
 ./emsdk/emsdk activate latest
 source ./emsdk/emsdk_env.sh
 </pre>
-<pre> # for Pyodide 0.23.2 - 0.23.4
+<pre> # for Pyodide 0.22.0 (Python3.10)
+./emsdk/emsdk install 3.1.27
+./emsdk/emsdk activate 3.1.27
+source ./emsdk/emsdk_env.sh
+</pre>
+<pre> # for Pyodide 0.23.2 - 0.23.4 (Python3.11)
 ./emsdk/emsdk install 3.1.32
 ./emsdk/emsdk activate 3.1.32
 source ./emsdk/emsdk_env.sh
@@ -158,5 +163,11 @@ source ./emsdk/emsdk_env.sh
 https://developer.mozilla.org/en-US/docs/WebAssembly/C_to_Wasm
 https://pyodide.org/en/0.23.2/development/new-packages.html
 <pre>
+python3.10 ./setup.py emcc bdist_wheel
+</pre>
+<pre>
+python3.11 -m pip install exodide[all]
+#rm -r /home/%%%USERNAME%%%/.local/lib/python3.11/site-packages/exodide/cpython
+#cp -r /usr/include/python3.11 /home/irack/.local/lib/python3.11/site-packages/exodide/cpython
 python3.11 ./setup.py emcc bdist_wheel
 </pre>
