@@ -1,4 +1,4 @@
-# OperationSimulator
+# FireOperationSimulator
 <pre>DESC: Operation Simulation Game for AI/ML Learning</pre>
 
 
@@ -9,13 +9,13 @@
 ### **B. Internal Architecture**
 ![Internal Architecture](./etc/internal_architecture.png)
 #### i. AI/ML Controller: AI sample solution that can solve the game of the simulator.
-#### ii. API Resolver: Layer that abstracts the user-selected API method such as HTTP, TCP Socket and Named Pipe(optional)
+#### ii. API Resolver: Layer that abstracts the user-selected API method such as Native TCP Socket, WebSocket, WebRTC.
 #### iii. Game Simulator: Fire Disaster Simulator which get input from API Resolver, calculate current status, and creates data that can be used to visualize game. For game visualization, the game simulation code should be completely abstracted and operate without problems in both the GUI and CLI environments.
 #### iv. GUI Visualizer/CLI Console: It can be both a GUI window and a CLI console according to the interface mode settings that the user selects.
 #### v. Game Logger: Game Tracker/Logger that records the game progress in detail. (Required to discuss the need for real-time data transmission later)
 
 ### **C. Interface**
-- The **Game Screen** has a resolution of 300 by 300. On the upper-left corner is the fire area, where the fire randomly occurs. The starting point is stationary at the lower-right corner of the screen, while a lake is located at the upper-right corner.
+- The **Game Screen** has a resolution of 1200 by 1200. On the upper-left corner is the fire area, where the fire randomly occurs. The starting point is stationary at the lower-right corner of the screen, while a lake is located at the upper-right corner.
 - The **Controller** is where the operation orders are made. It is internally connected to the Game screen so the result can be visually showed there. 
 
 ### **D. Aircraft**
@@ -68,9 +68,9 @@ ___
 
 ## **4. Order Sequence**
 - i. Each order consists of route, type of aircraft to use based on their properties and whether to fill the aircraft’s water tank from the lake or fly directly to the fire.
-- ii. An order is made every specific(20min) period. Even though the order made on the previous period is on process, a new order will be made.
+- ii. An order is made every minute. Even though the order made on the previous period is on process, a new order will be made.
 ![Order Sequence](./etc/period.png)
-- iii. Once an order is made, the aircraft cannot be controlled anymore before the operation ends. (Available after ETR of each aircraft)
+- iii. Even though an order is made, the ordered aircraft can re-ordered still if it is not launched. After ETD of each aircraft, aircraft will not be controlled anymore before the operation ends. (Available after ETR of each aircraft)
 ___
 
 ## **5. Application Programming Interface between Game Simulator and AI Controller**
@@ -91,7 +91,7 @@ ___
 /disconnect
 </pre>
 ** Order XML Shape **
-- Order Cancellation is not supported. (yet)
+- Order Cancellation is not supported. (yet) | Only overriding can be carried.
 ```xml
 <operations>
     <order>
